@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 4 · MMM vs MTA vs incrementality - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Leader session 4 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Leader session 4 of 6</div>
+    <h1>MMM vs MTA vs incrementality: <span class="accent">three tools, three questions</span></h1>
+    <p class="sub">Your team runs three kinds of measurement and they keep disagreeing. That is not a bug - it is the whole point. Mix modeling, multi-touch attribution, and incrementality tests each answer a different question, at a different grain, with a different claim to truth. This session teaches you to stop asking "which one is right?" and start asking "which one for which decision?" - then stack all three into one calibrated loop. No math, no code.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Leaders · CMO / CDAIO</span>
+      <span class="chip audience">No tech required</span>
+      <span class="chip time">45 min live + self-study</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-20 · Same question, three answers</span>
+      <span class="a3" style="flex:4">20-38 · The unified stack</span>
+      <span class="a4" style="flex:1">38-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why your three reports never agree</h2>
+    </div>
+    <p class="lede">By now you know attribution is a credit-splitting rule, you can read the heuristics, and you know the data-driven models are still only correlational. This session zooms all the way out. In any serious marketing org, three separate measurement disciplines run at once - <strong>MMM</strong> (marketing mix modeling), <strong>MTA</strong> (multi-touch attribution), and <strong>incrementality</strong> (holdout experiments) - and they routinely produce different numbers for the same channel. The rookie move is to pick a favorite. The leader move is to know what each one is built to answer, and to wire them together so each covers the others' blind spots. Six sessions, one real brand, zero code.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Work-along - everyone does it</span>
+      <span class="pill inkpill">The brand: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A one-line answer to the question your CFO will eventually ask - "why do our three measurement systems disagree, and which one do we trust for the budget?" - plus a budget-tier ladder that tells you exactly which of the three Lumen should be investing in next at $4M.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: SAME QUESTION, THREE ANSWERS ============ -->
+  <section class="section" id="same-question">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the payoff</span>
+      <h2>One question, three tools, three honest answers <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Lumen's CMO asks a simple-sounding question: <em>"Should we spend more on paid social?"</em> Send that question to each of the three measurement systems and you get three different - and each individually correct - answers, because each is answering a subtly different version of the question.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One question, should we spend more on paid social, routed into three lanes: MMM, MTA, and incrementality, each returning a different answer">
+        <style>
+          .laQ { font: 700 14px Inter, sans-serif; fill: #10201E; }
+          .laT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .laS { font: 400 12px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .laA { font: 700 12.5px Inter, sans-serif; fill: #10201E; }
+          .laX { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .laL { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#laAh); }
+        </style>
+        <defs>
+          <marker id="laAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <rect x="300" y="18" width="280" height="46" rx="11" fill="#5EEAD4"/>
+        <text class="laQ" x="326" y="46">"Spend more on paid social?"</text>
+        <line class="laL" x1="360" y1="64" x2="150" y2="98"/>
+        <line class="laL" x1="440" y1="64" x2="440" y2="98"/>
+        <line class="laL" x1="520" y1="64" x2="730" y2="98"/>
+        <!-- lane 1: MMM -->
+        <rect x="14" y="100" width="270" height="62" rx="12" fill="#0B4A45"/>
+        <text class="laT" x="32" y="126">MMM</text>
+        <text class="laS" x="32" y="147">how to split the TOTAL budget</text>
+        <rect x="14" y="170" width="270" height="118" rx="12" fill="#DCEDE9"/>
+        <text class="laA" x="32" y="196">"Across your whole $4M,</text>
+        <text class="laA" x="32" y="214">social is under-weighted vs</text>
+        <text class="laA" x="32" y="232">its long-run contribution."</text>
+        <text class="laX" x="32" y="262">answer for: strategy</text>
+        <text class="laX" x="32" y="280">grain: weekly, aggregate</text>
+        <!-- lane 2: MTA -->
+        <rect x="305" y="100" width="270" height="62" rx="12" fill="#0F766E"/>
+        <text class="laT" x="323" y="126">MTA</text>
+        <text class="laS" x="323" y="147">which campaign WITHIN social</text>
+        <rect x="305" y="170" width="270" height="118" rx="12" fill="#DCEDE9"/>
+        <text class="laA" x="323" y="196">"Your retargeting set beats</text>
+        <text class="laA" x="323" y="214">prospecting 3:1 - shift spend</text>
+        <text class="laA" x="323" y="232">inside social, not to it."</text>
+        <text class="laX" x="323" y="262">answer for: daily tactics</text>
+        <text class="laX" x="323" y="280">grain: user-level touches</text>
+        <!-- lane 3: incrementality -->
+        <rect x="596" y="100" width="270" height="62" rx="12" fill="#14B8A6"/>
+        <text class="laT" x="614" y="126" style="fill:#10201E">Incrementality</text>
+        <text class="laS" x="614" y="147" style="fill:#10201E">is the ROAS even REAL?</text>
+        <rect x="596" y="170" width="270" height="118" rx="12" fill="#DCEDE9"/>
+        <text class="laA" x="614" y="196">"We turned social off in 20</text>
+        <text class="laA" x="614" y="214">geos: sales fell 9%. Yes, it</text>
+        <text class="laA" x="614" y="232">causes real lift - fund it."</text>
+        <text class="laX" x="614" y="262">answer for: proof</text>
+        <text class="laX" x="614" y="280">grain: geo experiment</text>
+        <rect x="14" y="308" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="laX" x="36" y="319" style="fill:#10201E">None of the three is wrong. They answer different questions - so when they "disagree", they are usually just talking past each other.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - one question routed into three measurement systems, three valid answers</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The three questions, said plainly<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Memorize the questions, not the acronyms. Each tool exists because a leader needed to answer one specific thing:</p>
+        <ul>
+          <li><strong>MMM answers "how do I split my TOTAL budget?"</strong> It looks at aggregate weekly spend and outcomes across every channel - including the ones you cannot track a user through, like CTV, brand, and offline. It is the strategic anchor for the whole media plan.</li>
+          <li><strong>MTA answers "which campaign or creative wins WITHIN a channel?"</strong> It follows individual user journeys touch by touch, so it is granular and fast - perfect for daily steering of the campaigns you can actually track.</li>
+          <li><strong>Incrementality answers "is this channel's ROAS actually real?"</strong> It runs a controlled experiment - turn a channel off in some geographies, leave it on in others, measure the gap. It is the only one of the three that establishes cause.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A brand's MTA dashboard credited branded search with a 14x ROAS - the highest of any channel. Then they ran a holdout: paused branded search bidding in half their regions. Sales barely moved. Those customers were going to type "the brand" and buy anyway; the ads were harvesting demand that already existed. MTA measured the correlation perfectly and drew exactly the wrong conclusion. Only the experiment revealed the truth.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Correlational vs causal - the line that matters<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Here is the single most important distinction in modern measurement, and it splits the three tools cleanly. <strong>MMM and MTA are correlational.</strong> They observe what happened alongside the sale and infer contribution. They can be fooled by demand they did not create. <strong>Incrementality is causal.</strong> It manufactures a genuine comparison - a world with the channel and a world without - so the difference it measures is the lift the channel actually caused.</p>
+        <p>This is why incrementality is called the gold standard. It is also why it is used sparingly: experiments cost real revenue (you deliberately turn off working channels in some regions) and take weeks to read. You cannot run one for every daily decision. The art is using the cheap, fast, correlational tools for most decisions and the expensive, slow, causal tool to keep them honest.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: WHAT EACH IS GOOD AT ============ -->
+  <section class="section" id="what-each">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the comparison</span>
+      <h2>What each tool is actually good at <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Put the three side by side on the four dimensions a leader actually cares about: what data it eats, what question it answers, whether it survives privacy loss, and whether it can claim cause. The pattern jumps out.</p>
+
+    <table class="clean">
+      <thead><tr><th>Dimension</th><th>MMM</th><th>MTA</th><th>Incrementality</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Data it uses</strong></td><td>Aggregate weekly spend + outcomes, 2-3 years</td><td>User-level touchpoint paths</td><td>A controlled experiment (geo on/off, holdout)</td></tr>
+        <tr><td><strong>Question it answers</strong></td><td>How to split the TOTAL budget across all channels</td><td>Which campaigns/creatives win within channels</td><td>Is this channel's ROAS causally real?</td></tr>
+        <tr><td><strong>Sees offline / brand / CTV?</strong></td><td>Yes - the only one that can</td><td>No - only trackable digital touches</td><td>Yes - whatever you can toggle by geo</td></tr>
+        <tr><td><strong>Privacy resilience</strong></td><td>High - uses no user-level data</td><td>Low - depends on tracking individuals</td><td>High - measures aggregate geo outcomes</td></tr>
+        <tr><td><strong>Causal or correlational?</strong></td><td>Correlational</td><td>Correlational</td><td>Causal (the gold standard)</td></tr>
+        <tr><td><strong>Speed / cadence</strong></td><td>Slow - quarterly refresh</td><td>Fast - daily</td><td>Slow - weeks per test</td></tr>
+      </tbody>
+    </table>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A two by two of the three tools plotted by causal strength and decision speed">
+        <style>
+          .qdA { stroke: #B9D6D0; stroke-width: 2; fill: none; marker-end: url(#qdAh); }
+          .qdX { font: 600 12px Inter, sans-serif; fill: #5B7671; }
+          .qdN { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .qdD { font: 400 11px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .qdK { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+        </style>
+        <defs>
+          <marker id="qdAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <line class="qdA" x1="80" y1="255" x2="80" y2="30"/>
+        <line class="qdA" x1="80" y1="255" x2="840" y2="255"/>
+        <text class="qdX" x="20" y="40">causal</text>
+        <text class="qdX" x="20" y="250">correl.</text>
+        <text class="qdX" x="92" y="278">slow / strategic</text>
+        <text class="qdX" x="700" y="278">fast / tactical</text>
+        <!-- incrementality: high causal, slow -->
+        <rect x="130" y="52" width="220" height="70" rx="12" fill="#14B8A6"/>
+        <text class="qdN" x="150" y="80" style="fill:#10201E">Incrementality</text>
+        <text class="qdD" x="150" y="101" style="fill:#10201E">causal · slow · the truth check</text>
+        <!-- MMM: correlational-ish, slow strategic -->
+        <rect x="130" y="170" width="220" height="70" rx="12" fill="#0B4A45"/>
+        <text class="qdN" x="150" y="198">MMM</text>
+        <text class="qdD" x="150" y="219">correlational · slow · the anchor</text>
+        <!-- MTA: correlational, fast -->
+        <rect x="600" y="170" width="220" height="70" rx="12" fill="#0F766E"/>
+        <text class="qdN" x="620" y="198">MTA</text>
+        <text class="qdD" x="620" y="219">correlational · fast · the steering</text>
+        <rect x="130" y="20" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="qdK" x="152" y="31">No single tool is both causal AND fast AND strategic - which is exactly why you need all three, each covering the others' gap.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the three tools plotted by how causal and how fast each one is</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Read the grid like a leader<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The table and the grid say the same thing two ways. Three takeaways to carry out of the room:</p>
+        <ul>
+          <li><strong>MTA is the only low-privacy-resilience tool</strong> - it needs to follow individuals, which is exactly the thing 2026 privacy rules took away. That is next session's whole story, and it is why MTA's share of trust has been shrinking.</li>
+          <li><strong>MMM is the only tool that sees your untrackable spend</strong> - CTV, brand, offline, influencer. If a big slice of Lumen's budget is invisible to user-level tracking, MMM is not optional; it is the only lens that sees the whole board.</li>
+          <li><strong>Incrementality is the only causal tool, so it is the tiebreaker</strong> - when MMM and MTA disagree, you do not argue, you run an experiment. The test settles it.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The reframe to say out loud</strong>
+          Stop asking your team "which measurement system is right?" Ask instead: "for THIS decision, which grain of truth do we need - a strategic split, a tactical steer, or causal proof?" The decision picks the tool, not the other way around.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why the numbers disagree - three real reasons<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>When your MMM, your MTA dashboard, and your last geo-test show different ROAS for the same channel, it is almost never because one is broken. It is because:</p>
+        <ul>
+          <li><strong>Different data grains.</strong> MMM sees weekly aggregates; MTA sees individual clicks. A channel that looks weak per-click can look strong in aggregate once you fold in its untracked halo effect on other channels.</li>
+          <li><strong>Different questions.</strong> "How to split the total" and "which creative wins" have genuinely different answers. Comparing them directly is a category error.</li>
+          <li><strong>Correlational vs causal.</strong> MMM and MTA report what co-occurred with sales; incrementality reports what caused them. A channel can correlate beautifully with revenue while causing very little of it - branded search is the classic trap.</li>
+        </ul>
+        <p>So the goal is never to force the three into one number. It is to know which one to believe for which move - and to let the causal one calibrate the other two.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE UNIFIED STACK + TIER LADDER ============ -->
+  <section class="section" id="unified-stack">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the modern punchline</span>
+      <h2>Don't pick one - stack all three <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">The modern answer is not a winner. It is a division of labor: <strong>MMM as the strategic anchor, incrementality tests to calibrate it, and MTA for daily tactical steering.</strong> Lift results become priors that make the MMM more trustworthy; the MMM sets the budget; MTA optimizes inside it. But you do not build the whole stack on day one - you climb a ladder as your budget grows.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An ascending budget-tier ladder: under 1 million attribution only, 1 to 5 million add geo-lift, 5 to 20 million add full MMM, 20 million plus run all three as a calibrated loop">
+        <style>
+          .ldT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .ldS { font: 400 12px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .ldB { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .ldX { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .ldN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+        </style>
+        <!-- step 4 (top) -->
+        <rect x="470" y="30" width="396" height="66" rx="12" fill="#14B8A6"/>
+        <text class="ldB" x="490" y="55" style="fill:#10201E">$20M+</text>
+        <text class="ldT" x="490" y="74" style="fill:#10201E">Run all three as a calibrated loop</text>
+        <text class="ldS" x="490" y="90" style="fill:#10201E">MMM anchors · lift calibrates · MTA steers daily</text>
+        <!-- step 3 -->
+        <rect x="360" y="106" width="506" height="66" rx="12" fill="#2A9D8F"/>
+        <text class="ldB" x="380" y="131">$5M - $20M</text>
+        <text class="ldT" x="380" y="150">Add full MMM</text>
+        <text class="ldS" x="380" y="166">a strategic anchor across ALL channels, incl. offline/CTV</text>
+        <!-- step 2 -->
+        <rect x="250" y="182" width="616" height="66" rx="12" fill="#0F766E"/>
+        <text class="ldB" x="270" y="207">$1M - $5M</text>
+        <text class="ldT" x="270" y="226">Add geo-lift tests</text>
+        <text class="ldS" x="270" y="242">start proving causality on your biggest channels</text>
+        <!-- step 1 (bottom) -->
+        <rect x="140" y="258" width="726" height="66" rx="12" fill="#0B4A45"/>
+        <text class="ldB" x="160" y="283">&lt; $1M</text>
+        <text class="ldT" x="160" y="302">Attribution only</text>
+        <text class="ldS" x="160" y="318">clean tracking + a sensible MTA model is enough</text>
+        <!-- Lumen marker -->
+        <rect x="14" y="182" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="ldN" x="34" y="194">Lumen</text>
+        <text class="ldX" x="34" y="212">$4M</text>
+        <text class="ldX" x="34" y="230">sits here:</text>
+        <text class="ldX" x="34" y="248">lift tier,</text>
+        <text class="ldX" x="34" y="266">moving up</text>
+        <text class="ldX" x="34" y="284">to MMM</text>
+        <text class="ldX" x="140" y="348">Each rung ADDS a tool - you never throw the lower ones away. More budget buys more measurement, in this order.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the budget-tier ladder: what measurement to add as spend grows</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The calibrated loop, in one breath<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Here is how the three fit together once you are at the top of the ladder:</p>
+        <ul>
+          <li><strong>MMM is the anchor.</strong> Once or twice a year it tells you roughly how the total budget should split across every channel, including the untrackable ones.</li>
+          <li><strong>Incrementality calibrates the anchor.</strong> You run geo-lift tests on your biggest channels; the measured lift becomes a <em>prior</em> that corrects the MMM, so the model is grounded in real experiments instead of pure correlation.</li>
+          <li><strong>MTA steers day to day.</strong> Inside the budget the MMM set, MTA and modeled attribution optimize which campaigns and creatives get the money this week.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Mature growth teams now run this as a rhythm: MMM refreshed quarterly, two or three incrementality tests per quarter feeding priors back into it, and MTA-driven optimization running continuously underneath. The MMM says "put 30% into social"; the lift test confirms social genuinely causes that lift; MTA decides which social campaigns get the 30%. Three tools, one loop, no arguing about which is "right".</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Where Lumen sits, and why<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Lumen spends $4M/year across nine channels. On the ladder, that places it squarely in the <strong>"attribution + geo-lift"</strong> tier - it is past the point where a simple MTA model is enough, and it should already be running incrementality tests on its biggest bets (paid social, influencer). It is not yet at the "full MMM as standing anchor" tier, but it is close enough that MMM is the obvious next investment - especially because a real chunk of its budget (CTV at 8%, influencer at 14%) is exactly the untrackable spend that only MMM can see. That is the through-line into your first work-along.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ WORK-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 1 of 2</span>
+      <h2>Place Lumen on the tier ladder <span class="tag demo">★ 10 min · everyone</span></h2>
+    </div>
+    <p class="lede">Use Lumen's real numbers - $4M budget, nine channels, CTV and influencer growing - to place it on the ladder and name its single next measurement investment. Then do the same for your own org.</p>
+    <div class="steps">
+      <div class="step"><p>Find Lumen's rung. $4M puts it in the "$1M-$5M: add geo-lift" tier. So the baseline expectation is: it already runs attribution, and it should be running incrementality tests. Ask - is it?</p></div>
+      <div class="step"><p>Check the untrackable slice. CTV is 8% and influencer is 14% of the $4M - that is over a fifth of the budget that user-level MTA literally cannot see. Any channel MTA can't track is a vote for MMM.</p></div>
+      <div class="step"><p>Name the next investment. Lumen is at the top of its rung and about to cross into MMM territory. The single next move: stand up a first MMM to get a strategic anchor across ALL nine channels, calibrated by the geo-lift tests it should already be running.</p></div>
+      <div class="step"><p>Now do yours. Where does your budget put you on the ladder? What is the one tool you are missing at your rung - and is any of your spend invisible to user-level tracking (a hidden MMM argument)?</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>The move that earns respect</strong>
+      A leader who can say "we are a $4M brand, so we should be running lift tests and standing up our first MMM - not buying yet another MTA dashboard" has just saved the company from over-investing in the tool that privacy is quietly breaking. Matching measurement to budget scale is a genuinely senior instinct.
+    </div>
+  </section>
+
+  <!-- ============ WORK-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 2 of 2</span>
+      <h2>Reconcile a disagreement <span class="tag demo">★ 10 min · discuss</span></h2>
+    </div>
+    <p class="lede">The scenario every CMO faces: MMM says paid social is under-funded, last-touch says paid search is the hero. Two systems, opposite verdicts, one budget. Which do you trust - and what do you do next?</p>
+    <div class="steps">
+      <div class="step"><p><strong>Name the questions each is answering.</strong> The MMM is answering "how should the total split?" - a strategic question. Last-touch is answering "who got the final click?" - a closing-credit question. They are not even in conflict; they measure different things.</p></div>
+      <div class="step"><p><strong>Apply create-vs-capture.</strong> Paid search captures demand that already exists - it sits by the finish line, so last-touch always flatters it. Paid social creates demand earlier, so last-touch always under-credits it. This is a known, predictable bias, not new information.</p></div>
+      <div class="step"><p><strong>Refuse to move budget on either alone.</strong> The MMM is correlational (it could be reading a halo it did not cause); last-touch is a heuristic that throws away 80% of the journey. Neither is proof.</p></div>
+      <div class="step"><p><strong>Break the tie with an experiment.</strong> Run a geo-lift test on paid social: hold it back in a set of regions for four weeks, measure the sales gap. If social causes real incremental lift, the MMM was right and you fund it - now with causal proof, not a model's opinion.</p></div>
+      <div class="step"><p><strong>Write the verdict.</strong> "I trust neither number for the budget yet. The MMM's story is more strategically sound than last-touch's, so I will test it: a four-week geo-holdout on paid social settles it causally before we move a dollar."</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>The wrong answer is "trust the one with the nicer dashboard". The disagreement between MMM and last-touch is not a problem to resolve on a spreadsheet - it is a hypothesis worth testing. Leaders who treat conflicting measurement as a prompt to experiment, rather than a debate to win, are the ones who reallocate budgets that actually hold up.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 5</span>
+      <h2>This week <span class="tag exercise">◐ 25 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Locate your org on the ladder.</strong> What is your annual media budget, and what measurement should you have at that rung? Write down the one tool you are missing.</li>
+      <li><strong>Find your untrackable slice.</strong> Add up the share of your budget in channels that user-level tracking cannot follow - CTV, offline, brand, some influencer. If it is over 15%, you have an MMM argument to make.</li>
+      <li><strong>Ask your team the reconciliation question.</strong> "The last time two of our measurement systems disagreed, how did we decide who to believe?" If the answer is "we picked the one we liked", you have found a process gap.</li>
+      <li><strong>Optional:</strong> read one public geo-lift case study (Meta's Conversion Lift docs are free) and notice how the "turn it off in some regions" logic works - that intuition is all you need as a leader.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Which of the three measurement approaches is the only one that establishes cause?</p>
+      <button class="qopt" type="button">A · MMM, because it uses years of data</button>
+      <button class="qopt" type="button">B · MTA, because it follows every touch</button>
+      <button class="qopt" type="button">C · Incrementality, because it runs a controlled experiment (channel off in some geos)</button>
+      <p class="qwhy">Only an experiment - a real comparison of a world with the channel and a world without - can prove causation. MMM and MTA are both correlational; they observe what co-occurred with the sale.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Why does MMM survive the loss of user-level tracking when MTA does not?</p>
+      <button class="qopt" type="button">A · MMM uses aggregate weekly spend and outcomes, so it never needed to track individuals</button>
+      <button class="qopt" type="button">B · MMM is run by a bigger vendor</button>
+      <button class="qopt" type="button">C · MMM ignores privacy rules</button>
+      <p class="qwhy">MMM models channels in aggregate, so cookies and device IDs are irrelevant to it. MTA depends on stitching one person's touches together - exactly the thing privacy rules removed.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · Your MMM and your MTA dashboard report different ROAS for paid social. The best read is...</p>
+      <button class="qopt" type="button">A · One of them is broken - find the bug</button>
+      <button class="qopt" type="button">B · They answer different questions at different grains - reconcile with a lift test, don't force one number</button>
+      <button class="qopt" type="button">C · Always trust the more granular one</button>
+      <p class="qwhy">Disagreement is usually two tools answering different questions, not an error. The mature move is to let the causal tool - incrementality - break the tie, and to stack all three rather than crown one.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session distills the "three measurement approaches and why they disagree" chapter of the leading courses into a leader-first framing. Certificates and full video courses stay with their official sources.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Marketing Attribution and Mix Modeling (LinkedIn Learning) - ch.4</span><span class="note">MMM vs MTA, mix modeling basics - Parts 1-2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Marketing Measurement: Attribution to Incrementality (Udemy)</span><span class="note">the three approaches, budget-tier thinking - Parts 1-3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">The math of MMM (adstock, saturation curves)</span><span class="note">built hands-on in Builder Session 8</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Geo-lift experiment design</span><span class="note">built hands-on in Builder Session 9</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Why MTA broke in 2026</span><span class="note">the privacy story in Leader Session 5</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader Session 4 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>MMM</b><span>Aggregate weekly data. Answers "how to split the TOTAL budget" incl. offline/CTV. High privacy resilience. Correlational.</span></div>
+      <div class="cheat-item"><b>MTA</b><span>User-level touch paths. Answers "which campaign/creative wins WITHIN a channel". Low privacy resilience. Correlational.</span></div>
+      <div class="cheat-item"><b>Incrementality</b><span>A controlled experiment (channel off in some geos). Answers "is the ROAS causally real?". High privacy resilience. CAUSAL - the gold standard.</span></div>
+      <div class="cheat-item"><b>The modern punchline</b><span>Don't pick one. MMM anchors strategy · lift tests calibrate MMM (become priors) · MTA steers daily tactics.</span></div>
+      <div class="cheat-item"><b>Budget-tier ladder</b><span>&lt;$1M attribution only · $1-5M add geo-lift · $5-20M add full MMM · $20M+ all three as a loop. Lumen ($4M) = lift tier, moving to MMM.</span></div>
+      <div class="cheat-item"><b>Why they disagree</b><span>Different data grains, different questions, correlational vs causal. Don't force one number - reconcile with a lift test.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 4 of 6 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a3-data-driven-decoded.html">← Prev: Data-driven decoded</a> &nbsp;·&nbsp; <a href="a5-cookieless-2026.html">Next: The 2026 cookieless break →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

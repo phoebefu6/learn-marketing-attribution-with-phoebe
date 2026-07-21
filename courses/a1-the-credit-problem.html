@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 1 · The credit problem - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Leader session 1 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Leader session 1 of 6</div>
+    <h1>The credit problem: <span class="accent">who gets the sale?</span></h1>
+    <p class="sub">Five channels touched one customer. One bought a $92 order. Which channel gets the credit - and who decides? This session is the whole course in miniature: one real journey, eight ways to split the credit, eight different answers, and the reason your last-click dashboard has been quietly lying to you. No math, no code - just the question every marketing dollar depends on.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Start here</span>
+      <span class="chip audience">Leaders · CMO / CDAIO</span>
+      <span class="chip audience">No tech required</span>
+      <span class="chip time">45 min live + self-study</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:3">3-16 · The credit problem</span>
+      <span class="a3" style="flex:5">16-38 · Split it yourself</span>
+      <span class="a4" style="flex:1">38-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why this course exists</h2>
+    </div>
+    <p class="lede">Every marketing team on earth reports a number that says "this channel drove the sale." Almost none of them can defend it. Attribution is the discipline of assigning credit for a conversion across the touchpoints that led to it - and it turns out that innocent-looking word, "credit", is one of the most consequential and most misunderstood decisions in a marketing budget. This leader track teaches you to read those numbers, trust the right ones, and reallocate a budget without getting fooled. Six sessions, one real brand, zero code.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Work-along - everyone does it</span>
+      <span class="pill inkpill">The brand: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A gut-level feel for why the same customer journey produces wildly different "who won" answers depending only on the rule you pick - and the confidence to ask your team "which model is this, and why that one?" the next time a channel report lands on your desk.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE JOURNEY ============ -->
+  <section class="section" id="the-journey">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the running project</span>
+      <h2>Meet Lumen, and one real journey <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Both tracks of this course work on one brand: <strong>Lumen Skincare</strong>, an $18M/year direct-to-consumer skincare label with nine marketing channels and a $4M media budget its CMO needs to defend. We start with a single customer - one journey we will carry through every session and every model.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One Lumen customer journey: display, paid social, email, organic search, paid search, then convert for 92 dollars">
+        <style>
+          .cpT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .cpD { font: 400 12px Inter, sans-serif; fill: #FFFFFF; opacity: .9; }
+          .cpX { font: 400 12.5px Inter, sans-serif; fill: #5B7671; }
+          .cpG { font: 700 15px Inter, sans-serif; fill: #10201E; }
+          .cpA { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#cpAh); }
+        </style>
+        <defs>
+          <marker id="cpAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <rect x="12" y="60" width="150" height="58" rx="11" fill="#0B4A45"/>
+        <text class="cpT" x="28" y="84">📺 Display</text>
+        <text class="cpD" x="28" y="103">impression · day -14</text>
+        <rect x="180" y="60" width="150" height="58" rx="11" fill="#0F766E"/>
+        <text class="cpT" x="196" y="84">📱 Paid social</text>
+        <text class="cpD" x="196" y="103">click · day -7</text>
+        <rect x="348" y="60" width="150" height="58" rx="11" fill="#0F766E"/>
+        <text class="cpT" x="364" y="84">✉️ Email</text>
+        <text class="cpD" x="364" y="103">open · day -3</text>
+        <rect x="516" y="60" width="150" height="58" rx="11" fill="#14B8A6"/>
+        <text class="cpT" x="532" y="84">🔎 Organic</text>
+        <text class="cpD" x="532" y="103">click · day -1</text>
+        <rect x="684" y="60" width="150" height="58" rx="11" fill="#14B8A6"/>
+        <text class="cpT" x="700" y="84">💳 Paid search</text>
+        <text class="cpD" x="700" y="103">click · day 0</text>
+        <line class="cpA" x1="162" y1="89" x2="178" y2="89"/>
+        <line class="cpA" x1="330" y1="89" x2="346" y2="89"/>
+        <line class="cpA" x1="498" y1="89" x2="514" y2="89"/>
+        <line class="cpA" x1="666" y1="89" x2="682" y2="89"/>
+        <rect x="360" y="165" width="150" height="46" rx="11" fill="#F97316"/>
+        <text class="cpG" x="380" y="193" style="fill:#FFFFFF">🛒 CONVERT · $92</text>
+        <line class="cpA" x1="759" y1="118" x2="510" y2="180"/>
+        <text class="cpX" x="12" y="238">Fourteen days, five touches, one purchase. Now: which of the five earned the $92? Hold that question - it has no single right answer.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the canonical Lumen journey (we reuse this exact path all course long)</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>What "attribution" actually means<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Attribution is the act of <strong>distributing credit for one conversion across the touchpoints that preceded it</strong>. That's it. The customer above saw a display ad, clicked a paid-social post, opened an email, searched, and searched again - then bought. Attribution decides how much of that $92 each touch "earned". Every marketing report you have ever read made this decision for you, silently, using a rule someone chose - often without telling you which one.</p>
+        <ul>
+          <li><strong>It is a credit-splitting rule, not a fact.</strong> There is no laboratory that can tell you the "true" contribution of the email open. Attribution is a modeling choice dressed up as a measurement.</li>
+          <li><strong>The rule you pick moves money.</strong> If your model hands all the credit to the last click, you will pour budget into the channels that show up last - and starve the ones that created the demand in the first place.</li>
+          <li><strong>Leaders own the rule, not the math.</strong> You don't need to build the model. You need to know which one is running, what it flatters, and what it hides.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A DTC brand cut its entire display budget because the last-click dashboard showed display "drove" almost no sales. Revenue dropped 18% over the next quarter - because display was the channel that <em>started</em> most journeys. The dashboard wasn't wrong; it was answering a different question than the one the CFO thought it was answering. That gap is this whole course.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The nine channels and the shape of a journey<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Lumen spends across nine channels. Some <strong>create demand</strong> (people who didn't know they wanted you), some <strong>capture demand</strong> (people already looking). Attribution is really a fight over how much each side gets paid.</p>
+        <table class="clean">
+          <thead><tr><th>Mostly creates demand</th><th>Mostly captures demand</th></tr></thead>
+          <tbody>
+            <tr><td>Display, Paid social, Influencer, CTV</td><td>Paid search, Organic search, Direct</td></tr>
+            <tr><td>Show up early, rarely get the last click</td><td>Show up late, hog the last click</td></tr>
+          </tbody>
+        </table>
+        <p>Email and affiliate sit in the middle. Hold this create-vs-capture split in your head - it is the reason last-click attribution systematically over-pays search and under-pays social, and why the "hero channel" in your dashboard may just be the channel standing closest to the finish line.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: ONE JOURNEY, EIGHT ANSWERS ============ -->
+  <section class="section" id="eight-answers">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the payoff</span>
+      <h2>One journey, eight models, eight answers <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Here is the moment the whole field clicks. We take that <em>exact same</em> $92 journey and run it through eight attribution models. Nothing about the customer changes. Only the rule changes. Watch where the $92 lands.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Credit for the same 92 dollar journey under eight models, shown as horizontal bars across five channels">
+        <style>
+          .m8H { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .m8L { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .m8V { font: 700 10.5px Inter, sans-serif; fill: #FFFFFF; }
+          .m8C { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+        </style>
+        <!-- column headers: 5 channels -->
+        <text class="m8C" x="150" y="26">Display</text>
+        <text class="m8C" x="256" y="26">P.social</text>
+        <text class="m8C" x="360" y="26">Email</text>
+        <text class="m8C" x="460" y="26">Organic</text>
+        <text class="m8C" x="556" y="26">P.search</text>
+        <!-- rows: model label + 5 proportional segments in one 480px bar from x=140 -->
+        <!-- helper: bar total width 700 (x=140..840), split by fractions -->
+        <!-- First-touch: display 100 -->
+        <text class="m8H" x="10" y="52">First-touch</text>
+        <rect x="140" y="40" width="700" height="18" rx="4" fill="#DCEDE9"/>
+        <rect x="140" y="40" width="700" height="18" rx="4" fill="#0B4A45"/>
+        <text class="m8V" x="440" y="53">display $92</text>
+        <!-- Last-touch: paid search 100 -->
+        <text class="m8H" x="10" y="82">Last-touch</text>
+        <rect x="140" y="70" width="700" height="18" rx="4" fill="#DCEDE9"/>
+        <rect x="140" y="70" width="700" height="18" rx="4" fill="#14B8A6"/>
+        <text class="m8V" x="420" y="83">paid search $92</text>
+        <!-- Linear: 5 equal -->
+        <text class="m8H" x="10" y="112">Linear</text>
+        <rect x="140" y="100" width="140" height="18" rx="3" fill="#0B4A45"/>
+        <rect x="280" y="100" width="140" height="18" fill="#0F766E"/>
+        <rect x="420" y="100" width="140" height="18" fill="#2A9D8F"/>
+        <rect x="560" y="100" width="140" height="18" fill="#14B8A6"/>
+        <rect x="700" y="100" width="140" height="18" rx="3" fill="#5EEAD4"/>
+        <text class="m8V" x="175" y="113">$18.40 each</text>
+        <!-- Time-decay -->
+        <text class="m8H" x="10" y="142">Time-decay</text>
+        <rect x="140" y="130" width="46" height="18" rx="3" fill="#0B4A45"/>
+        <rect x="186" y="130" width="99" height="18" fill="#0F766E"/>
+        <rect x="285" y="130" width="145" height="18" fill="#2A9D8F"/>
+        <rect x="430" y="130" width="191" height="18" fill="#14B8A6"/>
+        <rect x="621" y="130" width="219" height="18" rx="3" fill="#5EEAD4"/>
+        <text class="m8L" x="640" y="143" style="fill:#10201E">recency wins</text>
+        <!-- Position U 40/20/40 -->
+        <text class="m8H" x="10" y="172">Position (U)</text>
+        <rect x="140" y="160" width="280" height="18" rx="3" fill="#0B4A45"/>
+        <rect x="420" y="160" width="47" height="18" fill="#0F766E"/>
+        <rect x="467" y="160" width="46" height="18" fill="#2A9D8F"/>
+        <rect x="513" y="160" width="47" height="18" fill="#14B8A6"/>
+        <rect x="560" y="160" width="280" height="18" rx="3" fill="#5EEAD4"/>
+        <text class="m8V" x="200" y="173">40%</text>
+        <text class="m8L" x="640" y="173" style="fill:#10201E">40% ends</text>
+        <!-- Last non-direct (same as last here) -->
+        <text class="m8H" x="10" y="202">Last non-direct</text>
+        <rect x="140" y="190" width="700" height="18" rx="4" fill="#DCEDE9"/>
+        <rect x="140" y="190" width="700" height="18" rx="4" fill="#14B8A6"/>
+        <text class="m8V" x="380" y="203">paid search $92 (no direct in path)</text>
+        <!-- Markov (learned) -->
+        <text class="m8H" x="10" y="232">Markov*</text>
+        <rect x="140" y="220" width="90" height="18" rx="3" fill="#0B4A45"/>
+        <rect x="230" y="220" width="230" height="18" fill="#0F766E"/>
+        <rect x="460" y="220" width="180" height="18" fill="#2A9D8F"/>
+        <rect x="640" y="220" width="110" height="18" fill="#14B8A6"/>
+        <rect x="750" y="220" width="90" height="18" rx="3" fill="#5EEAD4"/>
+        <text class="m8L" x="300" y="233" style="fill:#FFFFFF">learned from all journeys</text>
+        <!-- Shapley (learned) -->
+        <text class="m8H" x="10" y="262">Shapley*</text>
+        <rect x="140" y="250" width="110" height="18" rx="3" fill="#0B4A45"/>
+        <rect x="250" y="250" width="210" height="18" fill="#0F766E"/>
+        <rect x="460" y="250" width="170" height="18" fill="#2A9D8F"/>
+        <rect x="630" y="250" width="120" height="18" fill="#14B8A6"/>
+        <rect x="750" y="250" width="90" height="18" rx="3" fill="#5EEAD4"/>
+        <text class="m8L" x="300" y="263" style="fill:#FFFFFF">rewards channels that lift others</text>
+        <!-- note squares -->
+        <rect x="140" y="300" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="m8L" x="162" y="311" style="fill:#10201E">The heuristic models (rows 1-6) use a FIXED rule - no data learning. The last two (*) learn credit from the whole dataset.</text>
+        <rect x="140" y="326" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="m8L" x="162" y="337" style="fill:#10201E">Same customer, same $92, same five touches. The ONLY thing that changed between rows is the rule. That is the credit problem.</text>
+        <rect x="140" y="352" width="14" height="14" rx="3" fill="#14B8A6"/>
+        <text class="m8L" x="162" y="363" style="fill:#10201E">Notice first-touch and last-touch are perfect opposites - and most dashboards quietly run last-touch.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the same journey, eight models, eight answers (Markov + Shapley bars are illustrative of learned spread)</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Read the chart like a leader<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>You do not need to compute any of these. You need to see the pattern:</p>
+        <ul>
+          <li><strong>First-touch and last-touch are mirror images.</strong> One crowns the opener (display), the other crowns the closer (paid search). Both are single-touch: they throw away 80% of the journey. Most ad platforms default to last-touch - which is why every platform thinks it deserves the credit.</li>
+          <li><strong>The "fair-looking" middle models (linear, time-decay, position) are still guesses.</strong> Linear says every touch is equal - is an impression really worth as much as the final click? Time-decay says recent is better - says who? Position says the first and last matter most - a reasonable story, but still a story you asserted, not learned.</li>
+          <li><strong>The learned models (Markov, Shapley) look at all your journeys at once</strong> and ask a sharper question: what actually changes when this channel is present versus absent? That's Session 3 - and it's where credit stops being a guess.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The one question to carry into every meeting</strong>
+          When someone shows you channel performance, ask: "Which attribution model is this, and what would it look like under last-touch versus data-driven?" The answer tells you whether you're looking at a fact or a flattering rule.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The eight models in one table<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Model</th><th>Rule in one line</th><th>Over-credits</th></tr></thead>
+          <tbody>
+            <tr><td>First-touch</td><td>100% to the first touch</td><td>Awareness channels</td></tr>
+            <tr><td>Last-touch</td><td>100% to the final touch</td><td>Search &amp; retargeting</td></tr>
+            <tr><td>Last non-direct</td><td>Last touch, but skip "direct"</td><td>Same, minus self-navigation</td></tr>
+            <tr><td>Linear</td><td>Equal split across all touches</td><td>Low-value impressions</td></tr>
+            <tr><td>Time-decay</td><td>More credit to recent touches</td><td>Bottom-of-funnel</td></tr>
+            <tr><td>Position (U)</td><td>40% first + 40% last, 20% middle</td><td>Endpoints over nurture</td></tr>
+            <tr><td>Markov</td><td>Credit from "removal effect" across all paths</td><td>Learned - fewer blind spots</td></tr>
+            <tr><td>Shapley</td><td>Average marginal contribution across coalitions</td><td>Learned - rewards synergy</td></tr>
+          </tbody>
+        </table>
+        <p>Session 2 goes deep on the six heuristics; Session 3 decodes Markov and Shapley without the math. For now, just internalize: the top six are rules you assert, the bottom two are patterns you learn.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE THREE ERAS ============ -->
+  <section class="section" id="three-eras">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the map</span>
+      <h2>Three eras, stacked on top of each other <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Attribution didn't replace itself over time - it accumulated. Three eras of thinking now sit in every marketing stack at once, and a modern leader needs to know which one is answering which question.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three eras of attribution: heuristic rules, data-driven models, and the MMM plus incrementality pivot">
+        <style>
+          .erT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .erS { font: 400 12px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .erX { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .erN { font: 700 12px Inter, sans-serif; fill: #10201E; }
+        </style>
+        <rect x="14" y="40" width="270" height="120" rx="13" fill="#0B4A45"/>
+        <text class="erT" x="32" y="68">Era 1 · Heuristics</text>
+        <text class="erS" x="32" y="90">Fixed rules: first, last,</text>
+        <text class="erS" x="32" y="108">linear, time-decay, position</text>
+        <text class="erS" x="32" y="132">Arbitrary but simple.</text>
+        <text class="erS" x="32" y="150">Still the tool default.</text>
+        <rect x="305" y="40" width="270" height="120" rx="13" fill="#0F766E"/>
+        <text class="erT" x="323" y="68">Era 2 · Data-driven</text>
+        <text class="erS" x="323" y="90">Learned credit: Markov,</text>
+        <text class="erS" x="323" y="108">Shapley, ML, GA4 DDA</text>
+        <text class="erS" x="323" y="132">Smarter, but still</text>
+        <text class="erS" x="323" y="150">correlational - not proof.</text>
+        <rect x="596" y="40" width="270" height="120" rx="13" fill="#14B8A6"/>
+        <text class="erT" x="614" y="68">Era 3 · MMM + lift</text>
+        <text class="erS" x="614" y="90">Mix modeling + geo</text>
+        <text class="erS" x="614" y="108">incrementality experiments</text>
+        <text class="erS" x="614" y="132">The 2024-26 pivot -</text>
+        <text class="erS" x="614" y="150">privacy-proof, causal.</text>
+        <text class="erX" x="285" y="105" style="font-size:18px">›</text>
+        <text class="erX" x="576" y="105" style="font-size:18px">›</text>
+        <rect x="14" y="188" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="erN" x="36" y="199">Only Era 3's experiments are truly causal. Eras 1 and 2 answer "who correlates with the sale", not "who caused it".</text>
+        <text class="erX" x="14" y="230">You will meet all three. The skill is matching the era to the decision: heuristics for a quick read, data-driven for tactics, MMM + lift for the budget.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - three eras of attribution, all live in your stack at once</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Where this course takes you<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Your leader track walks these three eras in order: heuristics (Session 2), data-driven decoded (Session 3), then the big three-way fight - MMM vs multi-touch vs incrementality (Session 4), the 2026 privacy break that reshuffled everything (Session 5), and finally turning all of it into a defensible budget move (Session 6). Your builders, on the parallel track, actually build each model on Lumen's data.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>The most expensive attribution mistake is using the wrong era for the job: running a last-touch heuristic (Era 1) to make a strategic budget reallocation that needed a mix model and a holdout test (Era 3). It feels rigorous - there's a dashboard! - but you're using a bathroom scale to weigh a truck.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ WORK-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 1 of 2</span>
+      <h2>Interrogate a last-click report <span class="tag demo">★ 10 min · everyone</span></h2>
+    </div>
+    <p class="lede">We put Lumen's actual channel report on screen - the one the last-click dashboard produces - and pull it apart together. Bring your own report next week; today we use Lumen's.</p>
+    <div class="steps">
+      <div class="step"><p>Look at Lumen's last-click summary: paid search 41% of "attributed" revenue, paid social 12%, display 3%. On paper, search is the hero and display is a waste.</p></div>
+      <div class="step"><p>Ask the create-vs-capture question out loud: which of these channels do customers <em>find you through</em>, and which do they <em>come back through</em>? Search is mostly capture - people already looking for "Lumen vitamin C serum".</p></div>
+      <div class="step"><p>Now ask the killer follow-up: "How many of those paid-search conversions had a display or social touch <em>earlier</em> in the journey?" On Lumen's data, 68% did. Last-click gave those upstream channels zero.</p></div>
+      <div class="step"><p>Write the one-sentence verdict a leader should say: "This report tells me who closed, not who created - I will not cut display on this number alone."</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>The move that earns respect</strong>
+      You don't need to know the right answer in the room. You need to name which question the number answers. "Who closed" and "who mattered" are different questions - saying so out loud is what separates a leader who owns attribution from one who is owned by it.
+    </div>
+  </section>
+
+  <!-- ============ WORK-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 2 of 2</span>
+      <h2>Split the $92 yourself <span class="tag demo">★ 10 min · pen and paper</span></h2>
+    </div>
+    <p class="lede">No spreadsheet. Take the five-touch Lumen journey and split the $92 by hand under four models. Feeling the arbitrariness is the point.</p>
+    <div class="steps">
+      <div class="step"><p><strong>First-touch:</strong> all $92 to display. Write it down. Notice how it ignores the four touches that actually moved the person toward buying.</p></div>
+      <div class="step"><p><strong>Last-touch:</strong> all $92 to paid search. The opposite verdict, same customer. If your dashboard runs this, display looks worthless.</p></div>
+      <div class="step"><p><strong>Linear:</strong> $92 / 5 = $18.40 to each of the five touches. Fairer-feeling - but is an impression really worth the same as the final click?</p></div>
+      <div class="step"><p><strong>Position (U-shaped):</strong> 40% to display ($36.80), 40% to paid search ($36.80), and the remaining 20% ($18.40) split across the three middle touches (~$6.13 each). A story about "create and close matter most".</p></div>
+      <div class="step"><p>Look at your four rows. Same journey. Display earned anywhere from $0 to $92 depending only on the rule. <strong>That range is the credit problem</strong> - and no amount of cleaner data makes it go away. Only a better <em>model</em> does.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>Run this exercise with your own leadership team and watch the argument start - the paid-search owner loves last-touch, the brand owner loves first-touch, and everyone is "right" under their preferred rule. That argument, made explicit, is worth more than any dashboard: it reveals that your reporting has been quietly picking a winner all along.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 2</span>
+      <h2>This week <span class="tag exercise">◐ 25 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Find out which model your team runs.</strong> Ask your analytics owner one question: "What attribution model is our main revenue report using?" If the answer is "last-click" or "I'm not sure", you've already found your biggest reporting risk.</li>
+      <li><strong>Bring one real report to Session 2.</strong> A channel-performance screenshot from your own tools - we'll interrogate it the way we interrogated Lumen's.</li>
+      <li><strong>Do the $92 split for a real journey of your own</strong> - a purchase you personally made after seeing an ad, getting an email, then searching. Feel how differently the models treat it.</li>
+      <li><strong>Optional:</strong> take the free Google Analytics certification module on attribution (Skillshop) - you'll recognize the eight models, and it's a credential.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Attribution is best described as...</p>
+      <button class="qopt" type="button">A · A precise measurement of each channel's true contribution</button>
+      <button class="qopt" type="button">B · A feature of Google Analytics</button>
+      <button class="qopt" type="button">C · A credit-splitting rule you choose - a modeling decision, not a fact</button>
+      <p class="qwhy">There is no lab that reveals the "true" credit. Attribution is a choice dressed as a measurement - which is why the rule you pick moves real money.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Why does last-touch attribution systematically over-pay paid search?</p>
+      <button class="qopt" type="button">A · Search is a demand-capture channel that shows up last, so it hogs the final click</button>
+      <button class="qopt" type="button">B · Search ads are more expensive</button>
+      <button class="qopt" type="button">C · Google rigs the numbers</button>
+      <p class="qwhy">Create-vs-capture: search captures people already looking, so it sits near the finish line. Last-touch hands the whole prize to whoever's standing there.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · A colleague wants to reallocate the annual media budget using the last-click dashboard. Your leader move?</p>
+      <button class="qopt" type="button">A · Approve it - there's a dashboard, so it's rigorous</button>
+      <button class="qopt" type="button">B · Flag that a strategic budget call needs Era-3 tools (mix modeling + a holdout test), not an Era-1 heuristic</button>
+      <button class="qopt" type="button">C · Switch to first-touch instead</button>
+      <p class="qwhy">Match the era to the decision. Last-touch is a quick tactical read; a budget reallocation needs a mix model and an incrementality test - Sessions 4 through 6.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session distills the opening of the leading attribution courses - the "what is attribution and why do the models disagree" foundation - into a leader-first framing. Certificates and full video courses stay with their official sources.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Marketing Attribution and Mix Modeling (LinkedIn Learning) - ch.1</span><span class="note">what attribution is, the model families - Parts 1-2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Marketing Measurement: Attribution to Incrementality (Udemy) - intro</span><span class="note">the three eras framing - Part 3</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Google Analytics attribution models (Skillshop)</span><span class="note">the eight standard models - Part 2 table</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">The heuristic models in depth</span><span class="note">full treatment in Leader Session 2</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Markov &amp; Shapley (data-driven)</span><span class="note">decoded without math in Leader Session 3</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader Session 1 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Attribution =</b><span>Splitting credit for one conversion across the touchpoints before it. A rule you choose, not a fact you measure.</span></div>
+      <div class="cheat-item"><b>The credit problem</b><span>Same journey, different rule, different winner. Display earned $0 to $92 on one journey - only the model changed.</span></div>
+      <div class="cheat-item"><b>Create vs capture</b><span>Display/social/influencer create demand (show up early); search/direct capture it (show up last). Last-touch over-pays capture.</span></div>
+      <div class="cheat-item"><b>Three eras</b><span>1 Heuristics (fixed rules) · 2 Data-driven (learned, still correlational) · 3 MMM + incrementality (causal, privacy-proof).</span></div>
+      <div class="cheat-item"><b>The meeting question</b><span>"Which model is this, and what would it look like under last-touch vs data-driven?" Fact or flattering rule?</span></div>
+      <div class="cheat-item"><b>Match era to decision</b><span>Heuristic = quick read. Data-driven = tactics. MMM + holdout test = budget. Don't weigh a truck on a bathroom scale.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 1 of 6 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="../index.html">← All sessions</a> &nbsp;·&nbsp; <a href="a2-heuristic-models.html">Next: The heuristics you already use →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

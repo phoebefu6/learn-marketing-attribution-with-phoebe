@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 3 · Why heuristics fail - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 3 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 3 of 10</div>
+    <h1>Why heuristics fail, <span class="accent">and the data-driven leap</span></h1>
+    <p class="sub">Six models, six answers, and not one of them <em>learned</em> anything - they asserted. This session is the hinge of the whole builder track: we name the three failures baked into every heuristic, then cross the bridge Shao and Li built in 2011, predicting conversion from the set of channels a customer touched. You will fit a bagged logistic regression on Lumen, read per-channel credit straight off the coefficients, and see why plain logistic goes haywire on correlated channels while bagging steadies it.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Builders</span>
+      <span class="chip audience">scikit-learn</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-20 · The failures + the idea</span>
+      <span class="a3" style="flex:4">20-42 · Fit it on Lumen</span>
+      <span class="a4" style="flex:1">42-45 · Wrap</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The three failures of heuristics</h2>
+    </div>
+    <p class="lede">Heuristics <strong>assert</strong> credit; they never <strong>learn</strong> it. Once you have coded all six (Session 2), the cracks are obvious and they come in three shapes. Naming them precisely is what makes the data-driven model feel inevitable rather than fancy.</p>
+    <div class="legend">
+      <span class="pill solid">Live - built in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - everyone codes it</span>
+      <span class="pill inkpill">The data: Lumen Skincare</span>
+    </div>
+    <ul>
+      <li><strong>No interactions.</strong> A heuristic scores each touch in isolation. It cannot express "paid_social is only valuable <em>when</em> email follows it." Real journeys are full of these lifts, and a fixed rule is structurally blind to every one.</li>
+      <li><strong>Path-blind weighting.</strong> The value a heuristic assigns a channel does not depend on the rest of the path. Display gets 40% under position-based whether it opened a winning journey or a dead one - the weight is a constant, not a response to the data.</li>
+      <li><strong>Arbitrary weights.</strong> Why 40/40/20 and not 30/30/40? Why a 7-day half-life? Nobody can defend the constants because they were never estimated - they were chosen. The numbers look precise and are entirely made up.</li>
+    </ul>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A Lumen journey turned into a channel-presence feature matrix, a bagged logistic regression fit on it, per-channel credit read from the stabilized coefficients, and a side-by-side that shows how far data-driven credit moves from last-touch. Plus the intuition for why bagging - over sampled rows <em>and</em> sampled channels - is the fix Shao and Li reached for.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: SHAO-LI IDEA ============ -->
+  <section class="section" id="shao-li">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the bridge</span>
+      <h2>The Shao-Li idea: predict conversion from the channel set <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">In 2011 Shao and Li published the paper that launched data-driven multi-touch attribution. The move is simple and profound: stop assigning credit by rule, and instead <strong>predict whether a journey converts from the set of channels it contains</strong>. Fit a model, and the per-channel weights it learns <em>are</em> the attribution. Credit becomes something estimated from data, not decreed.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pipeline: journeys become channel-presence feature vectors, feed a logistic model, which outputs per-channel coefficients as credit">
+        <style>
+          .slT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .slH { font: 700 11px Inter, sans-serif; fill: #10201E; }
+          .slC { font: 600 11px Inter, sans-serif; fill: #10201E; }
+          .slX { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+          .slA { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#slAh); }
+        </style>
+        <defs>
+          <marker id="slAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- feature matrix -->
+        <rect x="10" y="30" width="270" height="30" rx="9" fill="#0B4A45"/>
+        <text class="slT" x="26" y="50">Journeys → presence matrix</text>
+        <rect x="10" y="60" width="270" height="150" fill="#DCEDE9"/>
+        <text class="slH" x="24" y="80">disp soc email srch  y</text>
+        <text class="slC" x="24" y="102">1    1    1     1    1</text>
+        <text class="slC" x="24" y="124">0    1    0     1    1</text>
+        <text class="slC" x="24" y="146">1    0    0     0    0</text>
+        <text class="slC" x="24" y="168">0    1    1     0    1</text>
+        <text class="slX" x="24" y="196">rows = journeys · 1 = channel present · y = converted</text>
+        <!-- model -->
+        <rect x="330" y="90" width="180" height="86" rx="12" fill="#0F766E"/>
+        <text class="slT" x="346" y="122">Logistic model</text>
+        <text class="slT" x="346" y="144" style="font-weight:400;font-size:11px">P(convert | channel set)</text>
+        <text class="slT" x="346" y="162" style="font-weight:400;font-size:11px">learns one weight/channel</text>
+        <!-- coefficients -->
+        <rect x="560" y="30" width="300" height="30" rx="9" fill="#14B8A6"/>
+        <text class="slT" x="576" y="50" style="fill:#10201E">Per-channel coefficient = credit</text>
+        <rect x="560" y="60" width="300" height="150" fill="#DCEDE9"/>
+        <text class="slC" x="576" y="86">paid_social   +0.91  ▇▇▇▇▇</text>
+        <text class="slC" x="576" y="110">email         +0.74  ▇▇▇▇</text>
+        <text class="slC" x="576" y="134">organic       +0.55  ▇▇▇</text>
+        <text class="slC" x="576" y="158">paid_search   +0.48  ▇▇▇</text>
+        <text class="slC" x="576" y="182">display       +0.30  ▇▇</text>
+        <text class="slX" x="576" y="202">higher weight = bigger lift to conversion odds</text>
+        <line class="slA" x1="280" y1="133" x2="328" y2="133"/>
+        <line class="slA" x1="510" y1="133" x2="558" y2="133"/>
+        <!-- note -->
+        <rect x="10" y="240" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="slX" x="32" y="251" style="fill:#10201E">The model never sees a hand-picked weight. It estimates each channel's contribution from which sets of channels actually converted.</text>
+        <rect x="10" y="266" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="slX" x="32" y="277" style="fill:#10201E">This is the exact moment credit stops being asserted and starts being LEARNED - the root of every data-driven attribution method.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - Shao-Li: journeys → feature vectors → logistic → per-channel credit (learned, not asserted)</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>What "learned credit" actually buys you<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The featurization is the key mental shift. A journey stops being an ordered path and becomes a <strong>bag of channels</strong>: a row of 0/1 flags saying which channels were present, with a label <code>y</code> for whether it converted. The model asks one honest question - <em>when this channel is in the set, do the odds of conversion go up, and by how much?</em> - and answers it from the whole dataset, not one path.</p>
+        <ul>
+          <li><strong>It captures the base idea of interaction</strong> because it weighs channels against each other simultaneously, not one at a time. Shao and Li also propose a companion probabilistic model using first- and second-order conditional probabilities - <code>P(conv | channel)</code> and <code>P(conv | channel pair)</code> - to catch pairwise lift directly.</li>
+          <li><strong>It is correlational, not causal.</strong> A learned coefficient says "journeys with this channel convert more", not "this channel caused the sale". Keep that honesty - it is why Sessions 8 and 9 add MMM and incrementality.</li>
+          <li><strong>It is the historical root of data-driven attribution.</strong> GA4's DDA, Markov, and Shapley all descend from this reframe: predict the outcome, read the credit off the model.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: WHY BAGGING ============ -->
+  <section class="section" id="bagging">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the stability fix</span>
+      <h2>Why plain logistic is unstable, and why bagging fixes it <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">There is a catch Shao and Li had to solve. Marketing channels are heavily <strong>correlated</strong> - customers who see paid_social often also get email, journeys that hit organic often hit paid_search. Feed correlated dummy variables to a plain logistic regression and the coefficients thrash: tiny changes in the sample flip a channel's weight from strongly positive to negative. Attribution you cannot reproduce is attribution you cannot defend.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before and after: unstable plain-logistic coefficients that swing wildly versus stable bagged coefficients">
+        <style>
+          .bgT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .bgL { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+          .bgN { font: 600 11px Inter, sans-serif; fill: #10201E; }
+          .bgZ { stroke: #5B7671; stroke-width: 1.5; stroke-dasharray: 4 3; }
+        </style>
+        <!-- LEFT: unstable -->
+        <rect x="10" y="24" width="410" height="30" rx="9" fill="#0B4A45"/>
+        <text class="bgT" x="26" y="44">Plain logistic · correlated channels</text>
+        <line x1="30" y1="150" x2="400" y2="150" stroke="#B9D6D0" stroke-width="2"/>
+        <line class="bgZ" x1="30" y1="100" x2="400" y2="100"/>
+        <!-- wild bars: some up, some down, jagged -->
+        <rect x="55"  y="70"  width="34" height="80" fill="#0F766E"/>
+        <rect x="110" y="150" width="34" height="70" fill="#F97316"/>
+        <rect x="165" y="105" width="34" height="45" fill="#0F766E"/>
+        <rect x="220" y="150" width="34" height="52" fill="#F97316"/>
+        <rect x="275" y="60"  width="34" height="90" fill="#0F766E"/>
+        <rect x="330" y="150" width="34" height="40" fill="#F97316"/>
+        <text class="bgL" x="40" y="244">coefficients swing +/- run to run - some go negative (coral).</text>
+        <text class="bgN" x="40" y="262">"email hurts conversion"? No - it is correlation, not signal.</text>
+        <!-- RIGHT: stable -->
+        <rect x="460" y="24" width="410" height="30" rx="9" fill="#14B8A6"/>
+        <text class="bgT" x="476" y="44" style="fill:#10201E">Bagged logistic · sample rows + channels</text>
+        <line x1="480" y1="150" x2="850" y2="150" stroke="#B9D6D0" stroke-width="2"/>
+        <line class="bgZ" x1="480" y1="100" x2="850" y2="100"/>
+        <!-- calm, all positive, smooth descending -->
+        <rect x="505" y="78"  width="34" height="72" fill="#0F766E"/>
+        <rect x="560" y="86"  width="34" height="64" fill="#2A9D8F"/>
+        <rect x="615" y="95"  width="34" height="55" fill="#2A9D8F"/>
+        <rect x="670" y="102" width="34" height="48" fill="#14B8A6"/>
+        <rect x="725" y="110" width="34" height="40" fill="#14B8A6"/>
+        <rect x="780" y="118" width="34" height="32" fill="#5EEAD4"/>
+        <text class="bgL" x="490" y="244">averaging many resampled fits cancels the noise -</text>
+        <text class="bgN" x="490" y="262">stable, all-positive, reproducible per-channel credit.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - correlated channels wreck a single logistic fit; bagging averages the thrash away</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Bagging over rows AND channels<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Shao and Li's answer is <strong>bagging</strong> - bootstrap aggregating. Fit the logistic model many times, each on a resample, then average the coefficients. Their twist is to sample in two directions:</p>
+        <ul>
+          <li><strong>Sample the instances</strong> (rows / journeys), standard bootstrap. Different journey mixes each fit.</li>
+          <li><strong>Sample the channels</strong> (features), so no single correlated pair dominates every model. Each base learner sees a subset of channels, breaking the collinearity that makes weights swing.</li>
+          <li><strong>Average the results.</strong> The noise that pushed a coefficient negative in one fit is cancelled by the fits where it landed positive. What survives the averaging is the stable, defensible signal.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The one-sentence why</strong>
+          Plain logistic on correlated channel dummies gives <em>unstable</em> coefficients; bagging over sampled rows and sampled channels <em>stabilizes</em> the per-channel attribution. That trade - a little variance for a lot of reproducibility - is the whole reason the paper bags.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The simple probabilistic model<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Alongside the bagged logistic, Shao and Li offer a lighter model built purely from <strong>conditional probabilities</strong>. Estimate the first-order term <code>P(conversion | channel present)</code> for each channel, and the second-order term <code>P(conversion | channel pair present)</code> for each pair. The pairwise term minus the two solo terms captures the <em>interaction</em> lift between two channels directly - the very thing heuristics cannot express. It is transparent, cheap, and a great sanity check against the logistic coefficients: when they disagree, something in your featurization is off.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: CONDITIONAL PROBABILITY ============ -->
+  <section class="section" id="cond-prob">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the honest caveat</span>
+      <h2>Learned, but still correlational <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Crossing from heuristics to data-driven is a real upgrade - credit now responds to the data - but it is not a leap to causality. Hold two truths at once so you never oversell the result upstairs.</p>
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>What the data-driven model can and cannot claim<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Can claim:</strong> "Journeys containing paid_social convert at higher odds, controlling for the other channels present." That is a learned, dataset-wide statement - genuinely more than any heuristic offers.</li>
+          <li><strong>Cannot claim:</strong> "paid_social <em>caused</em> the extra conversions." Correlated exposure and self-selection still lurk - the people who see paid_social may already be likelier to buy. Only a holdout or geo experiment (Session 9) settles cause.</li>
+          <li><strong>The discipline:</strong> use data-driven credit for tactical channel decisions, and reserve big budget reallocations for the causal tools. Same lesson as the leader track's "match the era to the decision", now in your own model.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A team shipped a bagged-logistic model, saw email's coefficient spike, and doubled the email budget - only for incrementality tests to show email was mostly reaching people who would have bought anyway. The model was not wrong; it was correlational, and someone read it as causal. Data-driven attribution earns trust precisely by naming that boundary out loud.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Featurize Lumen journeys into a channel-presence matrix <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">First turn Lumen's path table into the Shao-Li feature matrix: one row per journey, one 0/1 column per channel, and a <code>converted</code> label. This is the input every data-driven model in the course reuses.</p>
+    <div class="steps">
+      <div class="step"><p>Pivot the touchpoint table to channel presence and attach the conversion label from <code>conversions</code>:</p>
+        <div class="prompt-box good">
+          <span class="label">demo1_featurize.py</span>
+<pre>import pandas as pd
+
+CHANNELS = ["paid_search","paid_social","display","organic_search",
+            "email","affiliate","influencer","ctv","direct"]
+
+tp = pd.read_parquet("lumen_fct_touchpoints.parquet")
+
+# one row per customer, 1 if the channel appears anywhere in the journey
+X = (tp.assign(flag=1)
+       .pivot_table(index="customer_id", columns="channel",
+                    values="flag", aggfunc="max", fill_value=0)
+       .reindex(columns=CHANNELS, fill_value=0))
+
+# label: did this journey convert? (include non-converting journeys too!)
+conv = pd.read_parquet("lumen_conversions.parquet")
+y = X.index.isin(conv["customer_id"]).astype(int)
+
+print(X.shape, y.mean().round(3))   # feature matrix + base conversion rate</pre>
+        </div>
+      </div>
+      <div class="step"><p>The critical detail: you must include <strong>non-converting</strong> journeys. A model that only sees winners cannot learn what separates a converting channel set from a losing one - it would be all signal, no contrast.</p></div>
+      <div class="step"><p>Check the correlation matrix <code>X.corr()</code>. You will see paid_social/email and organic/paid_search light up - that collinearity is exactly what makes plain logistic unstable in the next step.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>Fit a bagged logistic regression, read per-channel credit <span class="tag demo">★ 8 min · everyone</span></h2>
+    </div>
+    <p class="lede">Now the Shao-Li model itself. Wrap <code>LogisticRegression</code> in scikit-learn's <code>BaggingClassifier</code>, sampling both rows and features, then average the base estimators' coefficients into stable per-channel credit.</p>
+    <div class="steps">
+      <div class="step"><p>Fit the ensemble - <code>max_features &lt; 1.0</code> is what samples channels, the Shao-Li twist:</p>
+        <div class="prompt-box good">
+          <span class="label">demo2_bagged_logistic.py</span>
+<pre>import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import BaggingClassifier
+
+bag = BaggingClassifier(
+    estimator=LogisticRegression(max_iter=1000),
+    n_estimators=200,
+    max_samples=0.8,      # bootstrap the journeys (rows)
+    max_features=0.6,     # sample the channels (features) - the Shao-Li twist
+    bootstrap=True,
+    random_state=42,
+).fit(X.values, y)
+
+# average each channel's coefficient across the base learners that used it
+coef_sum = np.zeros(X.shape[1]); coef_cnt = np.zeros(X.shape[1])
+for est, feats in zip(bag.estimators_, bag.estimators_features_):
+    coef_sum[feats] += est.coef_[0]
+    coef_cnt[feats] += 1
+avg_coef = coef_sum / np.maximum(coef_cnt, 1)
+
+credit = pd.Series(avg_coef, index=X.columns).sort_values(ascending=False)
+# turn positive coefficients into a % credit split
+credit_share = (credit.clip(lower=0) / credit.clip(lower=0).sum() * 100).round(1)
+print(credit_share)</pre>
+        </div>
+      </div>
+      <div class="step"><p>Compare against a single plain <code>LogisticRegression().fit(X, y)</code>. Refit it a few times on bootstrap resamples and watch individual coefficients swing - some flip sign. The bagged version barely moves. That contrast is the whole Part 2 lesson, reproduced on Lumen.</p></div>
+      <div class="step"><p>Read <code>credit_share</code> as the data-driven attribution: the channels whose presence most lifts conversion odds, credit learned from Lumen's data rather than a rule you typed.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>Why average, not just call bag.predict</strong>
+      <code>BaggingClassifier</code> gives you predictions out of the box, but attribution needs the <em>coefficients</em>, not the predictions. Averaging <code>estimators_</code> weights over the <code>estimators_features_</code> they were trained on is how you recover a stable per-channel number from the ensemble.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>Compare data-driven credit vs last-touch on Lumen <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">The moment it pays off: line the learned credit up against the last-touch rollup from Session 2 and see exactly which channels last-touch was starving.</p>
+    <div class="steps">
+      <div class="step"><p>Join the two channel-level views:</p>
+        <div class="prompt-box good">
+          <span class="label">demo3_compare.py</span>
+<pre># last_touch_share from B2's channel rollup (% of credit)
+compare = pd.DataFrame({
+    "last_touch":  last_touch_share,
+    "data_driven": credit_share,
+}).fillna(0)
+compare["delta"] = (compare["data_driven"] - compare["last_touch"]).round(1)
+print(compare.sort_values("delta", ascending=False))
+
+# Expect: paid_social / email / display GAIN credit (they create demand);
+# paid_search LOSES the inflated last-touch share it never earned alone.</pre>
+        </div>
+      </div>
+      <div class="step"><p>Read the <code>delta</code> column. Positive deltas are the demand-creating channels last-touch systematically underpaid; the large negative delta on paid_search is the over-crediting the whole course has been warning about, now measured on Lumen.</p></div>
+      <div class="step"><p>Write the one-line finding a stakeholder can act on: "Under a model that learns from the data instead of crowning the closer, paid_social and email carry far more of Lumen's conversions than the last-touch dashboard admits."</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>This delta table is often the single artifact that unlocks a budget conversation. It does not say "trust me"; it shows the same channels, two models, and the exact dollars that moved between them - and it names honestly that the data-driven number is correlational, so the final call still waits on Session 9's experiments. That mix of insight and humility is what gets a data-driven model adopted instead of argued with.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 4</span>
+      <h2>This week <span class="tag exercise">◐ 40 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Run all three build-alongs on Lumen</strong> and save the <code>compare</code> delta table - Session 4 (Markov) will add a third column to it.</li>
+      <li><strong>Demonstrate the instability yourself.</strong> Fit a plain logistic on 10 bootstrap resamples, plot each channel's coefficient across the runs, then do the same for the bagged model. The spread difference is the point of the whole session.</li>
+      <li><strong>Build the conditional-probability model.</strong> Compute <code>P(conv | channel)</code> and <code>P(conv | channel pair)</code> on Lumen and compare its ranking to the bagged-logistic ranking. Where do they disagree, and why?</li>
+      <li><strong>Optional:</strong> read Shao &amp; Li (2011) sections 2-3. You have now implemented both models they propose - the paper reads like your own code.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · The core thing every heuristic fails to capture is...</p>
+      <button class="qopt" type="button">A · The order of the touches</button>
+      <button class="qopt" type="button">B · The order value of the sale</button>
+      <button class="qopt" type="button">C · Interactions - that a channel's value depends on the other channels in the path</button>
+      <p class="qwhy">Heuristics score each touch in isolation with a fixed weight. They cannot express "paid_social only lifts conversion when email follows" - the interaction effects real journeys are full of.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Why did Shao and Li bag the logistic regression instead of fitting it once?</p>
+      <button class="qopt" type="button">A · Correlated channels make a single logistic's coefficients unstable; bagging over sampled rows and channels stabilizes them</button>
+      <button class="qopt" type="button">B · Bagging makes the model train faster</button>
+      <button class="qopt" type="button">C · A single logistic cannot handle 0/1 features</button>
+      <p class="qwhy">Marketing channels are heavily correlated, so a plain logistic's weights swing run to run - even going negative. Averaging many resampled fits (rows and channels) cancels the noise into reproducible credit.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · The essential difference between heuristics and data-driven attribution is that data-driven...</p>
+      <button class="qopt" type="button">A · Is always causal, so its credit is proven</button>
+      <button class="qopt" type="button">B · Learns credit from the data instead of asserting it by rule - though it stays correlational, not causal</button>
+      <button class="qopt" type="button">C · Never needs the non-converting journeys</button>
+      <p class="qwhy">Data-driven estimates each channel's contribution from which channel sets actually converted - learned, not decreed. But it is still correlational; only incrementality experiments (Session 9) establish cause.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session builds the historical root of data-driven attribution directly from the founding paper, on Lumen data - the bridge no heuristics course crosses and the foundation Markov and Shapley extend.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Shao &amp; Li (2011) - data-driven MTA</span><span class="note">bagged logistic + conditional-probability model - Parts 1-2, all build-alongs</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The three failures of heuristics</span><span class="note">no interactions, path-blind, arbitrary weights - Part 0</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Correlational vs causal boundary</span><span class="note">what a learned model may and may not claim - Part 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Markov removal-effect attribution</span><span class="note">built from scratch in Builder Session 4</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Incrementality / causal credit</span><span class="note">holdout + geo-lift experiments in Builder Session 9</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 3 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>3 failures of heuristics</b><span>No interactions · path-blind weighting · arbitrary constants (why 40/40/20?). All asserted, none learned.</span></div>
+      <div class="cheat-item"><b>The Shao-Li move (2011)</b><span>Predict conversion from the SET of channels touched; the model's per-channel weights ARE the attribution.</span></div>
+      <div class="cheat-item"><b>Featurize</b><span>One row per journey, 0/1 per channel, y = converted. Must include non-converting journeys for contrast.</span></div>
+      <div class="cheat-item"><b>Why bag</b><span>Correlated channels → unstable coefficients. Bag over sampled rows AND channels → stable, reproducible credit.</span></div>
+      <div class="cheat-item"><b>Simple probabilistic model</b><span>P(conv | channel) + P(conv | channel pair) captures pairwise interaction lift directly. Great sanity check.</span></div>
+      <div class="cheat-item"><b>Still correlational</b><span>Learned ≠ causal. Use for tactics; reserve budget reallocation for the incrementality tests in Session 9.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 3 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b2-heuristics-in-code.html">← Heuristics in code</a> &nbsp;·&nbsp; <a href="b4-markov-attribution.html">Next: Markov attribution →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

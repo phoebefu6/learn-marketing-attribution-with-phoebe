@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 2 · The heuristics you already use - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Leader session 2 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Leader session 2 of 6</div>
+    <h1>The heuristics <span class="accent">you already use</span></h1>
+    <p class="sub">Eight named attribution models. Not one of them learns a thing. They are fixed rules for splitting credit along an ordered path - and one of them is silently running your ad dashboard right now. This session teaches you to name the rule, spot the default, and stop calling any of them "data-driven". No math, no code - just the six-to-eight rules every marketer already lives inside without knowing it.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Core</span>
+      <span class="chip audience">Leaders · CMO / CDAIO</span>
+      <span class="chip audience">No tech required</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:3">3-18 · The eight rules</span>
+      <span class="a3" style="flex:5">18-40 · Match &amp; spot</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The rules you never chose on purpose</h2>
+    </div>
+    <p class="lede">Last session we watched one $92 Lumen journey produce eight different "winners" depending only on the rule we picked. Today we open up the first six of those rules - the <strong>heuristics</strong> - plus two B2B cousins, and look at what each one flatters and what each one hides. The word to hold onto: a heuristic is a <em>hardcoded credit-splitting rule on an ordered path</em>. It does not look at your data. It does not learn. It was decided once, by a person, and then applied to every journey forever.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Work-along - everyone does it</span>
+      <span class="pill inkpill">The brand: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The ability to look at any channel report and say, in one breath, "that's last-touch, it over-credits paid search, and it is not data-driven - it's a hardcoded rule." Naming the rule is the whole leader skill. Once you can name it, you can stop it from quietly reallocating your budget.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: SINGLE-TOUCH ============ -->
+  <section class="section" id="single-touch">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the two blunt instruments</span>
+      <h2>Single-touch: first versus last <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">The two simplest rules give 100% of the credit to a single touch. They are mirror images, and between them they run most of the marketing world. Here is the same Lumen journey - and what each single-touch rule does to it.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The five-touch Lumen journey with first-touch giving all credit to display and last-touch giving all credit to paid search">
+        <style>
+          .stT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .stD { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity: .9; }
+          .stX { font: 400 12px Inter, sans-serif; fill: #5B7671; }
+          .stC { font: 700 13px Inter, sans-serif; fill: #10201E; }
+          .stF { font: 700 12px Inter, sans-serif; fill: #F97316; }
+          .stA { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#stAh); }
+          .stCr { stroke: #F97316; stroke-width: 2.5; fill: none; marker-end: url(#stCh); }
+        </style>
+        <defs>
+          <marker id="stAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+          <marker id="stCh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#F97316" stroke-width="1.8"/>
+          </marker>
+        </defs>
+        <!-- first-touch credit callout -->
+        <text class="stF" x="12" y="24">▲ First-touch: 100% to the opener</text>
+        <line class="stCr" x1="86" y1="30" x2="86" y2="96"/>
+        <!-- the five boxes -->
+        <rect x="12" y="100" width="150" height="58" rx="11" fill="#0B4A45"/>
+        <text class="stT" x="28" y="124">📺 Display</text>
+        <text class="stD" x="28" y="143">impression · day -14</text>
+        <rect x="180" y="100" width="150" height="58" rx="11" fill="#0F766E"/>
+        <text class="stT" x="196" y="124">📱 Paid social</text>
+        <text class="stD" x="196" y="143">click · day -7</text>
+        <rect x="348" y="100" width="150" height="58" rx="11" fill="#2A9D8F"/>
+        <text class="stT" x="364" y="124">✉️ Email</text>
+        <text class="stD" x="364" y="143">open · day -3</text>
+        <rect x="516" y="100" width="150" height="58" rx="11" fill="#14B8A6"/>
+        <text class="stT" x="532" y="124">🔎 Organic</text>
+        <text class="stD" x="532" y="143">click · day -1</text>
+        <rect x="684" y="100" width="150" height="58" rx="11" fill="#5EEAD4"/>
+        <text class="stC" x="700" y="124">💳 Paid search</text>
+        <text class="stX" x="700" y="143" style="fill:#10201E">click · day 0</text>
+        <line class="stA" x1="162" y1="129" x2="178" y2="129"/>
+        <line class="stA" x1="330" y1="129" x2="346" y2="129"/>
+        <line class="stA" x1="498" y1="129" x2="514" y2="129"/>
+        <line class="stA" x1="666" y1="129" x2="682" y2="129"/>
+        <!-- last-touch credit callout -->
+        <line class="stCr" x1="759" y1="162" x2="759" y2="212"/>
+        <text class="stF" x="590" y="230">Last-touch: 100% to the closer ▼</text>
+        <!-- convert -->
+        <rect x="360" y="250" width="150" height="40" rx="11" fill="#F97316"/>
+        <text class="stT" x="382" y="275">🛒 CONVERT · $92</text>
+        <text class="stX" x="12" y="278">Same five touches. First-touch hands display the whole $92; last-touch hands paid search the whole $92.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the two single-touch rules crown opposite ends of one journey</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>First-touch, last-touch, and the one your platform runs<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Four of the eight rules are variations on "pick a single touch". The differences are small but the budget consequences are not.</p>
+        <ul>
+          <li><strong>First-touch</strong> gives 100% to the opener. It flatters awareness channels - display, social - and is beloved by brand teams. It throws away everything the customer did on the way to buying.</li>
+          <li><strong>Last-touch</strong> gives 100% to the final touch. <strong>This is the default of virtually every ad platform</strong> - which is exactly why every platform's own dashboard claims it drove the sale. It over-credits demand-capture channels standing near the finish line.</li>
+          <li><strong>Last non-direct</strong> is last-touch with one tweak: if the final touch is "direct" (someone typing your URL), skip it and credit the touch before. This was the legacy default of Google's <strong>Universal Analytics</strong>. The logic: "direct" usually means the customer was already sold, so don't reward it.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>The reason your Meta dashboard, your Google Ads dashboard, and your email tool each "prove" they drove the most revenue is that each runs last-touch on its own touches - so the same $92 gets claimed three times. Nobody is lying. They are all running the same single-touch rule on a different slice of the journey.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>When single-touch actively misleads you<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Single-touch is not always wrong. On a one-touch impulse buy - see ad, click, purchase - last-touch is basically correct because there is only one touch. The danger scales with the journey.</p>
+        <table class="clean">
+          <thead><tr><th>Sales cycle</th><th>Is single-touch safe?</th></tr></thead>
+          <tbody>
+            <tr><td>Impulse / one session</td><td>Fine - there is barely a path to split</td></tr>
+            <tr><td>Lumen-style (7-21 days, 5 touches)</td><td>Risky - it discards 80% of the journey</td></tr>
+            <tr><td>Long cycle (over ~60 days)</td><td>Actively misleading - the opener and the nurture vanish entirely</td></tr>
+          </tbody>
+        </table>
+        <p>Rule of thumb: the longer the consideration window, the more a single-touch model lies to you. Above roughly a 60-day cycle, treat any single-touch report as one narrow opinion, never the verdict.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: MULTI-TOUCH HEURISTICS ============ -->
+  <section class="section" id="multi-touch">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · spreading the credit</span>
+      <h2>Multi-touch heuristics: linear, time-decay, position <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">The next three rules stop crowning one touch and spread the $92 across all five. They feel fairer - and they are - but every one of them is still a rule you asserted, not a pattern anyone learned. Watch the same $92 land three different ways.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three multi-touch heuristics splitting the same 92 dollar journey across five channels: linear equal, time-decay recency-weighted, and position U-shaped">
+        <style>
+          .mtH { font: 700 12.5px Inter, sans-serif; fill: #10201E; }
+          .mtL { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+          .mtV { font: 700 10.5px Inter, sans-serif; fill: #FFFFFF; }
+          .mtD { font: 700 10.5px Inter, sans-serif; fill: #10201E; }
+          .mtC { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+        </style>
+        <!-- channel column headers -->
+        <text class="mtC" x="150" y="28">Display</text>
+        <text class="mtC" x="256" y="28">P.social</text>
+        <text class="mtC" x="360" y="28">Email</text>
+        <text class="mtC" x="458" y="28">Organic</text>
+        <text class="mtC" x="556" y="28">P.search</text>
+        <!-- Linear: 5 equal 140px -->
+        <text class="mtH" x="10" y="60">Linear</text>
+        <rect x="140" y="46" width="140" height="20" rx="3" fill="#0B4A45"/>
+        <rect x="280" y="46" width="140" height="20" fill="#0F766E"/>
+        <rect x="420" y="46" width="140" height="20" fill="#2A9D8F"/>
+        <rect x="560" y="46" width="140" height="20" fill="#14B8A6"/>
+        <rect x="700" y="46" width="140" height="20" rx="3" fill="#5EEAD4"/>
+        <text class="mtV" x="168" y="60">$18.40 each · equal split</text>
+        <!-- Time-decay: 46/99/145/190/220 -->
+        <text class="mtH" x="10" y="114">Time-decay</text>
+        <rect x="140" y="100" width="46" height="20" rx="3" fill="#0B4A45"/>
+        <rect x="186" y="100" width="99" height="20" fill="#0F766E"/>
+        <rect x="285" y="100" width="145" height="20" fill="#2A9D8F"/>
+        <rect x="430" y="100" width="190" height="20" fill="#14B8A6"/>
+        <rect x="620" y="100" width="220" height="20" rx="3" fill="#5EEAD4"/>
+        <text class="mtV" x="146" y="114">$6</text>
+        <text class="mtV" x="215" y="114">$13</text>
+        <text class="mtV" x="340" y="114">$19</text>
+        <text class="mtV" x="505" y="114">$25</text>
+        <text class="mtD" x="700" y="114">$29 · recency wins</text>
+        <!-- Position U: 280/47/47/46/280 -->
+        <text class="mtH" x="10" y="168">Position (U)</text>
+        <rect x="140" y="154" width="280" height="20" rx="3" fill="#0B4A45"/>
+        <rect x="420" y="154" width="47" height="20" fill="#0F766E"/>
+        <rect x="467" y="154" width="47" height="20" fill="#2A9D8F"/>
+        <rect x="514" y="154" width="46" height="20" fill="#14B8A6"/>
+        <rect x="560" y="154" width="280" height="20" rx="3" fill="#5EEAD4"/>
+        <text class="mtV" x="215" y="168">40% · $36.80</text>
+        <text class="mtD" x="600" y="168">40% · $36.80</text>
+        <text class="mtL" x="430" y="190">middle 20% split three ways ≈ $6.13 each</text>
+        <!-- note squares -->
+        <rect x="140" y="216" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="mtL" x="162" y="227" style="fill:#10201E">Time-decay weight = 2^(-days/half-life). Lumen uses a 7-day half-life - a number a human set by hand, not learned.</text>
+        <rect x="140" y="242" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="mtL" x="162" y="253" style="fill:#10201E">Same $92, same five touches. Each row is a different story about which touch mattered - all three asserted, none learned.</text>
+        <rect x="140" y="268" width="14" height="14" rx="3" fill="#14B8A6"/>
+        <text class="mtL" x="162" y="279" style="fill:#10201E">Position (U) bets the opener and closer matter most; the middle nurture gets the leftovers. A reasonable guess - still a guess.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - one $92 journey, three multi-touch heuristics, three different splits</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The three multi-touch rules, and their hidden knobs<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Linear</strong> splits credit equally - $18.40 to each of five touches. Its story is "every touch mattered the same". Its blind spot: an impression is treated as worth exactly as much as the final click.</li>
+          <li><strong>Time-decay</strong> gives more credit to recent touches, using <code>weight = 2^(-days / half-life)</code>. On Lumen's 7-day half-life, display gets ~$6 and paid search ~$29. The catch: <strong>the half-life is a hand-set knob</strong>. Change 7 days to 30 and display suddenly earns three times more - same journey, same data, different number, because you turned a dial.</li>
+          <li><strong>Position-based (U-shaped)</strong> gives 40% to the first touch, 40% to the last, and splits the remaining 20% across the middle. Its story: "creating and closing matter most, nurturing matters least". Defensible - and still a story you decided in advance.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The tell of a heuristic</strong>
+          Every one of these has a number a human chose - equal weights, a 7-day half-life, a 40/20/40 split. If you can point at the knob, it is a heuristic. Data-driven models have no such knob you set by hand; they read the weights off your journeys. That distinction is Session 3.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>All eight heuristics in one table<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Model</th><th>Fixed rule</th><th>Best for</th></tr></thead>
+          <tbody>
+            <tr><td>First-touch</td><td>100% to first touch</td><td>Awareness-led, short paths</td></tr>
+            <tr><td>Last-touch</td><td>100% to last touch (the ad-platform default)</td><td>Impulse / one-session buys</td></tr>
+            <tr><td>Last non-direct</td><td>Last touch, but skip "direct" (GA Universal Analytics legacy default)</td><td>When direct = already-sold</td></tr>
+            <tr><td>Linear</td><td>Equal split across all touches</td><td>Simple, even-nurture journeys</td></tr>
+            <tr><td>Time-decay</td><td>Weight = 2^(-days/half-life); recent touches win</td><td>Short cycles, recency matters</td></tr>
+            <tr><td>Position / U-shaped</td><td>40% first + 40% last + 20% split middle</td><td>Create-and-close funnels</td></tr>
+            <tr><td>W-shaped</td><td>30% first + 30% lead-creation + 30% opportunity + 10% rest</td><td>B2B with CRM milestones</td></tr>
+            <tr><td>Full-path / Z-shaped</td><td>22.5% x4 to first / lead / opp / closed-won + 10% middle</td><td>Long B2B sales cycles</td></tr>
+          </tbody>
+        </table>
+        <p>Notice the shape: every rule is a fixed set of percentages on an ordered path. None reads your data. That is the definition of a heuristic - and the reason none of them deserves the word "data-driven".</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: B2B PATH MODELS ============ -->
+  <section class="section" id="b2b-models">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the milestone models</span>
+      <h2>The B2B path models: W and Z-shaped <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Lumen is DTC, so its journeys are short. But if you ever run B2B - or a high-consideration DTC set purchase - you will meet two more heuristics built for long, milestone-driven journeys. They are still fixed rules; they just have more anchor points.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>W-shaped and Z-shaped, and why they need CRM milestones<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Single-touch and U-shaped only know about the <em>first</em> and <em>last</em> touch. B2B journeys have named stages in between - a lead gets created, an opportunity opens, a deal closes. The W and Z models anchor credit on those stages.</p>
+        <ul>
+          <li><strong>W-shaped:</strong> 30% to the first touch, 30% to the touch that <em>created the lead</em>, 30% to the touch that <em>created the opportunity</em>, and 10% split across everything else. Three peaks instead of two - hence the W.</li>
+          <li><strong>Full-path / Z-shaped:</strong> adds a fourth anchor - <em>closed-won</em>. It gives 22.5% each to first touch, lead-creation, opportunity-creation, and closed-won, with 10% for the middle. Built for long enterprise cycles where the deal-close touch genuinely matters.</li>
+          <li><strong>The catch:</strong> both need <strong>CRM milestone tags</strong> - your system has to know which touch created the lead versus the opportunity. No milestones, no W or Z. That is why these live in B2B stacks (Salesforce, HubSpot) and rarely in DTC dashboards.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A B2B team switched from last-touch to W-shaped and watched their "hero" channel flip overnight - from the demo-request paid-search campaign (last touch) to the webinar that created the lead months earlier. Nothing about the deals changed. They just added two more anchor points to the same fixed rule, and suddenly the top-of-funnel content team got the recognition their pipeline actually depended on.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why more anchors is still not "learning"<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>It is tempting to think W and Z are "smarter" than first-touch because they consider more of the journey. They do - but they are not smarter in the way that matters. The 30/30/30/10 and 22.5-x4 splits are still numbers a human wrote down. If the webinar in your funnel is genuinely worth 45% and not 30%, W-shaped will never find that out. It cannot. It has no mechanism to read your data and adjust. Every heuristic - from last-touch to Z-shaped - shares this exact ceiling: <strong>fixed rules, applied identically to every journey, forever</strong>. The models that break that ceiling are next session.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ WORK-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 1 of 2</span>
+      <h2>Match the model to your business <span class="tag demo">★ 10 min · pen and paper</span></h2>
+    </div>
+    <p class="lede">No spreadsheet. Decide, out loud, which heuristic fits a business - and which one would actively mislead it. The point is to feel that model choice is a business judgment, not a technical one.</p>
+    <div class="steps">
+      <div class="step"><p>Take a <strong>short-cycle</strong> business first - Lumen's impulse-serum buyer, one session, sees an ad and buys. Which heuristic is basically fine here? (Last-touch - there is barely a path to split, so crowning the one touch is roughly correct.)</p></div>
+      <div class="step"><p>Now take a <strong>long-cycle</strong> business - a B2B software deal, 90 days, a webinar, three emails, two demos, a final search. Which heuristics are still safe? (Not single-touch - it discards the webinar that created the lead. You need W or Z-shaped, and only if your CRM tags the milestones.)</p></div>
+      <div class="step"><p>Write the boundary you just found: <strong>above roughly a 60-day cycle, single-touch models are misleading</strong> because they throw away the touches that did the persuading.</p></div>
+      <div class="step"><p>Now place your own business on that line. What is your real consideration window - hours, weeks, months? Say the model that fits it, and the model your tools are probably running instead.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>The move that earns respect</strong>
+      "What's our sales cycle, and does our attribution model match it?" is a one-sentence question that instantly separates a leader who owns attribution from one who inherited whatever the tool shipped with. Cycle length picks the model - not habit, not the vendor default.
+    </div>
+  </section>
+
+  <!-- ============ WORK-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 2 of 2</span>
+      <h2>Spot the default: find what your tool runs - and what it flatters <span class="tag demo">★ 10 min · on your reports</span></h2>
+    </div>
+    <p class="lede">Every reporting tool has a default attribution model, and almost none of them announce it. Today we find Lumen's - and the flattery baked into it. Bring your own tool next; today we use Lumen's stack.</p>
+    <div class="steps">
+      <div class="step"><p>Open Lumen's channel report. Paid search shows 41% of "attributed" revenue, paid social 12%, display 3%. Ask the first question: <strong>which model produced these numbers?</strong> (It is last-touch - the platform default. Nobody labeled it, but the shape gives it away: capture channels on top, awareness channels at the bottom.)</p></div>
+      <div class="step"><p>Now ask what the default <em>flatters</em>. Last-touch flatters whoever stands nearest the sale - paid search, retargeting. It starves whoever opened the journey - display, social. On Lumen's data, 68% of those paid-search conversions had an earlier display or social touch that got zero credit.</p></div>
+      <div class="step"><p>Find the toggle. In GA4 the default is now data-driven; in your ad platforms it is last-touch on their own touches; in Universal Analytics it was last non-direct. Write down, for each tool you use, the model it silently runs.</p></div>
+      <div class="step"><p>Say the verdict a leader should say: "Our main report is last-touch, it flatters demand-capture, and it is a fixed rule - not data-driven. Before I move budget on it, I want to see the same channels under a data-driven model."</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>A brand assumed its "AI-powered attribution" was data-driven because the vendor said so. It was time-decay with a 7-day half-life - a hardcoded rule with a dashboard. When they changed the half-life to 30 days on a whim, every awareness channel tripled its credit. Nothing about the customers changed. They had been steering a $4M budget with a hand-turned knob and calling it intelligence.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 3</span>
+      <h2>This week <span class="tag exercise">◐ 25 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Name every default.</strong> List each reporting tool your team uses and write down the attribution model it runs by default. If you cannot find it, that itself is the finding - ask your analytics owner.</li>
+      <li><strong>Catch a "data-driven" that isn't.</strong> Find one place in your stack (a vendor deck, a dashboard label, an internal report) where a heuristic is being called "data-driven" or "AI". Bring it to Session 3.</li>
+      <li><strong>Do the half-life test on paper.</strong> Take your longest customer journey and split it under time-decay with a 7-day half-life, then a 30-day half-life. Feel how much the "winner" moves when you turn a knob no customer ever touched.</li>
+      <li><strong>Optional:</strong> skim the Google Analytics attribution-model reference (Skillshop) - it names all these rules and shows exactly where GA4 changed the default.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Which attribution model is the default of virtually every ad platform?</p>
+      <button class="qopt" type="button">A · First-touch</button>
+      <button class="qopt" type="button">B · Last-touch</button>
+      <button class="qopt" type="button">C · Linear</button>
+      <p class="qwhy">Ad platforms default to last-touch on their own touches - which is why each platform's dashboard claims it drove the sale. The same conversion gets credited by Meta, Google, and your email tool all at once.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · In time-decay attribution, the half-life (e.g. 7 days) is best described as...</p>
+      <button class="qopt" type="button">A · A value the model learns from your data</button>
+      <button class="qopt" type="button">B · A fixed industry standard you cannot change</button>
+      <button class="qopt" type="button">C · A knob a human sets by hand - change it and the credit split changes</button>
+      <p class="qwhy">The half-life is hand-set. Move it from 7 days to 30 and awareness channels earn far more credit on the exact same journey. A dial you turn is the signature of a heuristic.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · A vendor calls their first/last/linear/time-decay attribution "data-driven". What is the accurate correction?</p>
+      <button class="qopt" type="button">A · These are fixed rules on an ordered path - none of them learns from data, so none is data-driven</button>
+      <button class="qopt" type="button">B · They're correct - any attribution counts as data-driven</button>
+      <button class="qopt" type="button">C · Only last-touch is data-driven</button>
+      <p class="qwhy">Heuristics are hardcoded credit-splitting rules. They apply the same fixed percentages to every journey and never read your data. Calling them "data-driven" is the most common leader-level error in the field.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session distills the heuristic-models chapter of the leading attribution courses into a leader-first framing - naming each rule, its default status, and its bias. Certificates and full video courses stay with their official sources.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Marketing Attribution and Mix Modeling (LinkedIn Learning) - ch.2</span><span class="note">first / last / linear / time-decay / position, and their biases - Parts 1-2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Google Analytics attribution-model reference (Skillshop)</span><span class="note">the standard models + where GA4 changed the default - Part 2 table</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">B2B path models (W-shaped, Z-shaped / full-path)</span><span class="note">milestone-anchored heuristics - Part 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Markov &amp; Shapley (data-driven)</span><span class="note">decoded without math in Leader Session 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">MMM &amp; incrementality</span><span class="note">the causal era in Leader Sessions 4-5</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader Session 2 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Heuristic =</b><span>A fixed credit-splitting rule on an ordered path. It never learns from your data. Eight of them, all hardcoded.</span></div>
+      <div class="cheat-item"><b>Single-touch</b><span>First-touch (100% opener), last-touch (100% closer - the ad-platform default), last non-direct (last but skip direct - GA Universal Analytics legacy).</span></div>
+      <div class="cheat-item"><b>Multi-touch</b><span>Linear (equal), time-decay (2^(-days/half-life), hand-set knob), position/U (40% first + 40% last + 20% middle).</span></div>
+      <div class="cheat-item"><b>B2B path models</b><span>W-shaped (30/30/30/10, needs CRM milestones), Z-shaped/full-path (22.5% x4 + 10%). More anchors, still fixed rules.</span></div>
+      <div class="cheat-item"><b>The 60-day rule</b><span>Single-touch models are misleading in sales cycles longer than ~60 days - they discard the touches that did the persuading.</span></div>
+      <div class="cheat-item"><b>The leader error</b><span>Calling any heuristic "data-driven". If you can point at the knob (a weight, a half-life, a 40/20/40), it is a hardcoded rule.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 2 of 6 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a1-the-credit-problem.html">← Prev: The credit problem</a> &nbsp;·&nbsp; <a href="a3-data-driven-decoded.html">Next: Data-driven decoded →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

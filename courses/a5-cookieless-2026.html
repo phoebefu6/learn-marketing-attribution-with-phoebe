@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 5 · The 2026 cookieless break - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Leader session 5 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Leader session 5 of 6</div>
+    <h1>The 2026 cookieless break: <span class="accent">why MTA quietly stopped working</span></h1>
+    <p class="sub">Three forces - Apple's tracking rules, the SKAdNetwork-to-AdAttributionKit shift, and years of browser cookie blocking - converged on multi-touch attribution and cracked it. Your user-level dashboards now miss 30 to 60% of the touches they claim to see. And the reassuring headline that "Google cancelled the cookie ban" did not save you. This session explains what actually broke, corrects the myth your team may be repeating, and tells you what to demand next. No math, no code.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Advanced</span>
+      <span class="chip audience">Leaders · CMO / CDAIO</span>
+      <span class="chip audience">No tech required</span>
+      <span class="chip time">45 min live + self-study</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-20 · Why MTA broke</span>
+      <span class="a3" style="flex:4">20-38 · The myth &amp; the pivot</span>
+      <span class="a4" style="flex:1">38-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The ground shifted under your dashboards</h2>
+    </div>
+    <p class="lede">Last session you learned that multi-touch attribution is the only one of the three measurement systems with <em>low</em> privacy resilience - it needs to follow individual people across touches. This session is the story of what happened when the industry took that ability away. Between Apple's tracking prompts, the postback systems that replaced device IDs, and browsers blocking third-party cookies, the user-level data MTA depends on has been gutted. The uncomfortable part: many teams still trust their MTA numbers, and still repeat a headline that makes them feel safe. A leader in 2026 needs to know exactly what broke, so you can stop over-trusting a report built on data that is no longer there. Six sessions, one real brand, zero code.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Work-along - everyone does it</span>
+      <span class="pill inkpill">The brand: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The ability to correct the single most common 2026 measurement myth in a room full of marketers - "Google cancelled the cookie deprecation, so our MTA is fine" - and the three questions to ask any measurement vendor before you renew a contract.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: WHY MTA BROKE ============ -->
+  <section class="section" id="why-broke">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the diagnosis</span>
+      <h2>Three forces converging on a cracking funnel <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">MTA did not break for one reason. Three separate forces - each large on its own - all landed on the same dependency: the ability to follow one person's touches from ad to purchase. Together they knock 30 to 60% of the touchpoints out of your user-level reporting.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three forces - ATT, SKAN to AAK, and cookie blocking - feeding into a cracking MTA funnel that loses 30 to 60 percent of touches">
+        <style>
+          .frT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .frS { font: 400 11px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .frB { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .frP { font: 700 13px Inter, sans-serif; fill: #10201E; }
+          .frX { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .frL { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#frAh); }
+        </style>
+        <defs>
+          <marker id="frAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- three forces on the left -->
+        <rect x="14" y="30" width="250" height="66" rx="12" fill="#0B4A45"/>
+        <text class="frT" x="32" y="55">1 · Apple ATT</text>
+        <text class="frS" x="32" y="75">opt-in as low as ~14%;</text>
+        <text class="frS" x="32" y="90">IDFA gone for non-consenters</text>
+        <rect x="14" y="112" width="250" height="66" rx="12" fill="#0F766E"/>
+        <text class="frT" x="32" y="137">2 · SKAN → AAK</text>
+        <text class="frS" x="32" y="157">postbacks delayed, coarse,</text>
+        <text class="frS" x="32" y="172">noised - no user-level view</text>
+        <rect x="14" y="194" width="250" height="66" rx="12" fill="#2A9D8F"/>
+        <text class="frT" x="32" y="219">3 · Cookie blocking</text>
+        <text class="frS" x="32" y="239">Safari + Firefox block by</text>
+        <text class="frS" x="32" y="254">default since ~2020</text>
+        <line class="frL" x1="264" y1="63" x2="470" y2="120"/>
+        <line class="frL" x1="264" y1="145" x2="470" y2="145"/>
+        <line class="frL" x1="264" y1="227" x2="470" y2="170"/>
+        <!-- cracking funnel -->
+        <path d="M480,110 L700,110 L640,185 L540,185 Z" fill="#14B8A6"/>
+        <text class="frP" x="545" y="140">MTA funnel</text>
+        <text class="frP" x="560" y="160">(user-level)</text>
+        <line x1="590" y1="110" x2="565" y2="185" stroke="#10201E" stroke-width="2" stroke-dasharray="5 4"/>
+        <line x1="630" y1="110" x2="615" y2="185" stroke="#10201E" stroke-width="2" stroke-dasharray="5 4"/>
+        <!-- loss output -->
+        <rect x="730" y="118" width="136" height="60" rx="12" fill="#F97316"/>
+        <text class="frB" x="748" y="145">30-60%</text>
+        <text class="frS" x="748" y="165">of touches lost</text>
+        <line class="frL" x1="700" y1="148" x2="728" y2="148"/>
+        <rect x="14" y="284" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="frX" x="36" y="295" style="fill:#10201E">Each force alone would hurt. Together they mean a large share of the journey your MTA claims to see simply is not in the data anymore.</text>
+        <text class="frX" x="14" y="322">The funnel still draws a tidy path on the dashboard - but a third to two-thirds of the touches feeding it are missing or estimated.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - three forces converging on the user-level funnel MTA depends on</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Force 1 - Apple's App Tracking Transparency (ATT)<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Since ATT, iOS apps must show a prompt asking permission to track the user across other companies' apps and sites. Globally, opt-in rates have run as low as around <strong>14%</strong>. For the ~86% who decline, the IDFA - the device advertising identifier that let you stitch a person's app touches together - is effectively gone. The practical result: advertisers lose an estimated <strong>40 to 60% of iOS conversion visibility</strong>. For a DTC skincare brand like Lumen, whose buyers skew mobile and iPhone-heavy, that is not an edge case - that is the majority of the audience going dark to user-level tracking.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A mobile-first brand watched its "attributed" iOS conversions fall off a cliff the quarter ATT enforcement tightened - not because sales dropped, but because the ability to <em>see</em> which ad touched those buyers vanished. The revenue was real; the attribution was blind. Teams that did not understand ATT panicked and cut the channels that had simply gone invisible.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Force 2 - SKAdNetwork became AdAttributionKit (AAK)<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Apple's answer to "how do you measure ads without tracking people" was SKAdNetwork, and in iOS 18.4 it replaced that with <strong>AdAttributionKit (AAK)</strong>. The important thing for a leader is not the acronym - it is the shape of what these systems return. Instead of a clean, immediate, user-level record of "this person saw this ad and bought", AAK sends back <strong>postbacks that are delayed by hours or days, coarse-grained (bucketed, not exact), and deliberately noised for privacy</strong>. That design is fundamentally incompatible with the user-level dashboards MTA was built on. You cannot rebuild an individual journey from data that is intentionally aggregated, late, and fuzzy.</p>
+        <p>So even the "privacy-preserving measurement" Apple offers as a replacement does not restore MTA. It gives you enough to optimize campaigns in aggregate, not to trace one customer's path - which is exactly what multi-touch attribution requires.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Force 3 - third-party cookies were already gutted<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Long before any of this, <strong>Safari and Firefox began blocking third-party cookies by default around 2020</strong>. Between them, plus widespread ad-blockers, a large share of web traffic was already invisible to cross-site tracking years ago. Third-party cookies are the web equivalent of the IDFA - the thing that let you follow a person from an ad on one site to a purchase on yours. On the two browsers that block them by default, that link was already broken well before 2026. This matters enormously for the myth we are about to bust, because it means the fate of cookies in Chrome specifically was never the whole story.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE MYTH ============ -->
+  <section class="section" id="the-myth">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the correction</span>
+      <h2>The myth: "cookies survived, so we're fine" <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Here is the headline that is quietly giving teams false confidence in 2026, and why it is wrong. Google did <em>not</em> follow through on fully removing third-party cookies from Chrome - but that reprieve did not save multi-touch attribution.</p>
+
+    <div class="callout tip">
+      <strong>Common wrong belief to correct - out loud, in the room</strong>
+      "Google cancelled cookie deprecation, so our MTA is fine." This is <strong>false</strong>. Google first moved to a user-choice model in 2024 and then walked the deprecation back again in April 2025, so third-party cookies technically survive in Chrome. But MTA coverage is still structurally broken - because Safari, Firefox, ad-blockers, and Apple's ATT already removed the visibility, none of which Chrome's decision touches. MTA now misses an estimated 30 to 60% of touchpoints regardless of what Chrome does.</div>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cross-site tracking coverage by browser and platform: Chrome cookies survive, but Safari, Firefox, and iOS non-consenters are dark">
+        <style>
+          .cvH { font: 700 12.5px Inter, sans-serif; fill: #10201E; }
+          .cvV { font: 700 11px Inter, sans-serif; fill: #FFFFFF; }
+          .cvK { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+          .cvN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+        </style>
+        <text class="cvH" x="14" y="30">Cross-site visibility MTA can rely on, by surface</text>
+        <!-- Chrome -->
+        <text class="cvH" x="14" y="62">Chrome (web)</text>
+        <rect x="180" y="50" width="660" height="18" rx="4" fill="#DCEDE9"/>
+        <rect x="180" y="50" width="560" height="18" rx="4" fill="#0F766E"/>
+        <text class="cvV" x="360" y="63">cookies survived - mostly visible</text>
+        <!-- Safari -->
+        <text class="cvH" x="14" y="98">Safari (web)</text>
+        <rect x="180" y="86" width="660" height="18" rx="4" fill="#DCEDE9"/>
+        <rect x="180" y="86" width="90" height="18" rx="4" fill="#F97316"/>
+        <text class="cvK" x="290" y="99" style="fill:#10201E">blocked by default since ~2020</text>
+        <!-- Firefox -->
+        <text class="cvH" x="14" y="134">Firefox (web)</text>
+        <rect x="180" y="122" width="660" height="18" rx="4" fill="#DCEDE9"/>
+        <rect x="180" y="122" width="100" height="18" rx="4" fill="#F97316"/>
+        <text class="cvK" x="300" y="135" style="fill:#10201E">blocked by default</text>
+        <!-- iOS -->
+        <text class="cvH" x="14" y="170">iOS apps</text>
+        <rect x="180" y="158" width="660" height="18" rx="4" fill="#DCEDE9"/>
+        <rect x="180" y="158" width="92" height="18" rx="4" fill="#F97316"/>
+        <text class="cvK" x="292" y="171" style="fill:#10201E">~14% opt-in - the rest are dark (ATT)</text>
+        <rect x="14" y="200" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="cvN" x="36" y="211">Chrome keeping cookies (the teal bar) fixes only ONE surface. Every orange surface was already gone - and together they are most of the journey.</text>
+        <text class="cvK" x="14" y="240">Bars are illustrative of relative coverage, not exact market share - the point is the shape, not the pixel.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - Chrome is one lit surface among several already dark ones</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why the reprieve does not rescue MTA<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Follow the logic slowly, because this is the exact reasoning that lets you correct a confident colleague without a slide deck:</p>
+        <ul>
+          <li><strong>Chrome cookies surviving fixes one surface.</strong> It restores cross-site tracking on Chrome web traffic - and nothing else.</li>
+          <li><strong>The other surfaces were already dark.</strong> Safari and Firefox block cookies by default; iOS non-consenters have no IDFA; in-app measurement runs on delayed, coarse postbacks. None of those depend on Chrome's decision.</li>
+          <li><strong>Add it up and coverage is still broken.</strong> Across a real audience, a third to two-thirds of touches are missing from user-level view. A dashboard that only cleanly sees Chrome-web users is not measuring your business - it is measuring a shrinking, non-random slice of it.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A marketing team celebrated the Chrome news and renewed their user-level attribution vendor for another year, convinced the crisis had passed. Their reporting still silently excluded the majority of their iOS and Safari buyers - so it kept over-crediting the channels those users happened to be trackable through, and the budget kept drifting toward a distorted picture. The reprieve did not save them; it just delayed the reckoning.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE PIVOT ============ -->
+  <section class="section" id="the-pivot">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the response</span>
+      <h2>Why MMM and incrementality came back <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">When user-level tracking broke, the industry did not invent something new - it dusted off the two methods that never needed to track individuals in the first place. <strong>MMM uses aggregate data, so it is largely immune to all of this</strong>, and incrementality measures aggregate geo outcomes, so it is immune too. The past decade leaned MTA-heavy; the future leans MMM-plus-lift.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A pivot arrow from an MTA-heavy past to an MMM plus incrementality future">
+        <style>
+          .pvT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .pvS { font: 400 12px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .pvN { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .pvX { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+        </style>
+        <defs>
+          <marker id="pvAh" markerWidth="12" markerHeight="12" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8" fill="none" stroke="#B9D6D0" stroke-width="2"/>
+          </marker>
+        </defs>
+        <rect x="14" y="50" width="300" height="110" rx="13" fill="#5B7671"/>
+        <text class="pvT" x="34" y="82">The 2010s stack</text>
+        <text class="pvS" x="34" y="106">MTA-heavy: user-level</text>
+        <text class="pvS" x="34" y="124">tracking as the default lens</text>
+        <text class="pvS" x="34" y="148">Depended on cookies + IDFA</text>
+        <line x1="322" y1="105" x2="560" y2="105" stroke="#B9D6D0" stroke-width="3" marker-end="url(#pvAh)"/>
+        <text class="pvX" x="360" y="94">privacy break</text>
+        <rect x="566" y="50" width="300" height="110" rx="13" fill="#14B8A6"/>
+        <text class="pvT" x="586" y="82" style="fill:#10201E">The 2026 stack</text>
+        <text class="pvS" x="586" y="106" style="fill:#10201E">MMM anchors + geo-lift</text>
+        <text class="pvS" x="586" y="124" style="fill:#10201E">proves cause; MTA is a</text>
+        <text class="pvS" x="586" y="148" style="fill:#10201E">supporting tactical layer</text>
+        <rect x="14" y="184" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="pvN" x="36" y="195">MMM uses aggregate data, so privacy loss barely touches it - which is exactly why it resurged.</text>
+        <text class="pvX" x="14" y="228">Four credible open-source MMM toolkits are now free - Google Meridian, Meta Robyn, PyMC-Marketing, and one more - democratizing a method that used to need a big consultancy.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the pivot from a tracking-dependent past to a privacy-durable future</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>What to demand from your measurement team<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>You do not need to build any of this. You need to steer it. Three demands a leader should make in 2026:</p>
+        <ul>
+          <li><strong>Stop treating MTA as ground truth.</strong> Keep it for tactical, within-channel steering, but demote it from "the number we set budgets on". Its coverage is structurally broken and will not recover.</li>
+          <li><strong>Stand up MMM as the strategic anchor.</strong> Because it uses aggregate data, it survives everything that broke MTA - and four credible open-source toolkits (<strong>Google Meridian, Meta Robyn, PyMC-Marketing, and one more</strong>) are now free, so cost is no longer the excuse it once was.</li>
+          <li><strong>Fund incrementality tests to keep it honest.</strong> The only causal check you have. Budget for a few geo-lift experiments a year to calibrate the MMM.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The reframe to say out loud</strong>
+          "Identity resolution is a patch, not a fix." First-party data, clean rooms, server-side tracking, and consent-mode modeling all help you salvage some user-level signal - but they are patching a leaking method, not replacing it. The durable answer is aggregate-first measurement: MMM anchored, lift-calibrated.</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Identity resolution - the patch layer, honestly<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Your team will propose patches, and some are worth doing - just know what they are and are not. <strong>First-party data</strong> (your own logged-in customer relationships) restores signal for people who identify themselves to you. <strong>Data clean rooms</strong> let you match aggregated audiences with a platform without either side exposing raw user data. <strong>Server-side tracking</strong> moves collection to your own servers to survive some browser blocking. <strong>Consent-mode modeling</strong> statistically fills gaps for users who declined tracking. Each recovers a little coverage. None of them rebuilds the full cross-site, cross-app journey MTA assumed - that world is gone. Treat identity resolution as a way to sharpen your first-party view, not as a rescue for multi-touch attribution.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ WORK-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 1 of 2</span>
+      <h2>Audit your own exposure <span class="tag demo">★ 10 min · everyone</span></h2>
+    </div>
+    <p class="lede">Before you can fix a measurement problem you have to size it. Estimate how much of your reporting depends on the user-level tracking that broke - using Lumen as the worked example, then your own brand.</p>
+    <div class="steps">
+      <div class="step"><p>Estimate your iOS + Safari share. For a DTC skincare brand like Lumen, mobile-heavy and iPhone-skewing, this is likely the majority of buyers - and much of it is dark to user-level tracking thanks to ATT and Safari's default blocking.</p></div>
+      <div class="step"><p>Ask which reports feed on user-level data. Any dashboard that shows individual conversion paths, retargeting attribution, or "assisted conversions" is drinking from the broken well. Flag each one.</p></div>
+      <div class="step"><p>Put a number on it. If roughly 30 to 60% of touches are missing, then a report claiming precise per-channel credit is, at best, describing a non-random minority of your customers. Say that number out loud - it reframes every meeting.</p></div>
+      <div class="step"><p>Write the exposure sentence: "Roughly half our audience is invisible to the user-level tracking our main attribution report depends on, so I will not set the annual budget on that report alone."</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>The move that earns respect</strong>
+      Most leaders never ask "how much of this dashboard is actually measured versus estimated?" Asking it - and putting a rough percentage on the blind spot - instantly changes how much weight the room gives the number. You do not need the exact figure; you need to establish that a big, non-random chunk is missing.
+    </div>
+  </section>
+
+  <!-- ============ WORK-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 2 of 2</span>
+      <h2>Write the three vendor questions <span class="tag demo">★ 10 min · pen and paper</span></h2>
+    </div>
+    <p class="lede">Every measurement vendor in 2026 will tell you they have "solved" the privacy break. Your job is to test that claim in three questions. Draft them now - you will use them at your next renewal.</p>
+    <div class="steps">
+      <div class="step"><p><strong>Question one - the coverage question.</strong> "What percentage of our conversions can you actually observe at the user level, and how do you handle the rest - modeled, estimated, or simply dropped?" A vendor who claims near-total coverage in 2026 is either misleading you or heavily modeling.</p></div>
+      <div class="step"><p><strong>Question two - the aggregate question.</strong> "Do you offer aggregate, privacy-durable measurement - MMM and incrementality - or only user-level attribution?" If they only sell MTA, they are selling you the method that broke.</p></div>
+      <div class="step"><p><strong>Question three - the causal question.</strong> "How do you validate your attribution against a causal experiment - can you calibrate to a geo-lift test?" A vendor whose numbers have never been checked against a holdout is selling correlation with confidence.</p></div>
+      <div class="step"><p>Write all three on one card. Bring it to the next vendor call. Watch how fast the conversation gets honest.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>The vendors who thrive in 2026 answer these three questions cleanly - they tell you their real observable coverage, they offer aggregate methods, and they calibrate to experiments. The ones who dodge, deflect, or bury you in jargon about "advanced identity graphs" are usually patching MTA and hoping you do not ask. The three questions are a lie detector.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 6</span>
+      <h2>This week <span class="tag exercise">◐ 25 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Size your blind spot.</strong> Estimate the share of your customers on iOS and Safari, and confirm with your team roughly how much of your main attribution report is measured versus modeled.</li>
+      <li><strong>Correct the myth once.</strong> The next time someone says "Google kept cookies, so we're fine", walk them through why the other surfaces were already dark. Teaching it is how you own it.</li>
+      <li><strong>Ask about MMM readiness.</strong> Find out whether your team has ever built or bought an MMM, and whether they know the free toolkits (Meridian, Robyn, PyMC-Marketing) exist. Cost is no longer the blocker.</li>
+      <li><strong>Optional:</strong> skim Meta Blueprint's free measurement path or one 2026 industry write-up on the cookieless shift - just enough to hear the same three forces described in the vendors' own words.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · What did Apple's ATT and the SKAdNetwork-to-AdAttributionKit shift do to iOS measurement?</p>
+      <button class="qopt" type="button">A · Made iOS conversions easier to track</button>
+      <button class="qopt" type="button">B · Had no real effect on attribution</button>
+      <button class="qopt" type="button">C · Gutted user-level iOS visibility - low opt-in kills the IDFA, and AAK postbacks are delayed, coarse, and noised</button>
+      <p class="qwhy">With opt-in near 14%, the IDFA is gone for most users, and AAK deliberately returns aggregated, delayed, privacy-noised data - none of which supports the user-level journeys MTA needs.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">2 · A colleague says "Google cancelled cookie deprecation, so our MTA is fine." The correct response is...</p>
+      <button class="qopt" type="button">A · Agree - the crisis is over</button>
+      <button class="qopt" type="button">B · Correct it: Chrome keeping cookies fixes one surface, but Safari, Firefox, ad-blockers, and ATT already broke coverage - MTA still misses 30-60% of touches</button>
+      <button class="qopt" type="button">C · Switch all reporting back to last-touch</button>
+      <p class="qwhy">Chrome's reprieve restores only Chrome-web tracking. The other surfaces were dark before 2026, so MTA coverage is still structurally broken regardless of what Chrome does.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Why did MMM resurge as the privacy-durable anchor?</p>
+      <button class="qopt" type="button">A · It uses aggregate spend-and-outcome data, so it never needed user-level tracking - and free open-source toolkits now exist</button>
+      <button class="qopt" type="button">B · It got more accurate than experiments</button>
+      <button class="qopt" type="button">C · Apple recommends it</button>
+      <p class="qwhy">MMM models channels in aggregate, so it is largely immune to ATT, SKAN/AAK, and cookie loss. Free toolkits (Meridian, Robyn, PyMC-Marketing, and one more) removed the old cost barrier.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session distills the 2026 privacy-and-measurement reality - the part no pre-2024 course teaches well - into a leader-first framing. Certificates and full video courses stay with their official sources.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Meta Blueprint - Conversion Lift path (free)</span><span class="note">why aggregate + experiments replaced tracking - Parts 1-3</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Industry 2026 sources (ATT, AAK, cookie status)</span><span class="note">the three forces and the myth correction - Parts 1-2</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">GA4 DDA and cross-tool reconciliation</span><span class="note">built hands-on in Builder Session 7</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Building an MMM (adstock, saturation)</span><span class="note">built hands-on in Builder Session 8</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Turning all this into a budget move</span><span class="note">the capstone in Leader Session 6</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader Session 5 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Three forces broke MTA</b><span>Apple ATT (~14% opt-in, IDFA gone) · SKAN→AdAttributionKit (delayed, coarse, noised postbacks) · Safari + Firefox cookie blocking since ~2020.</span></div>
+      <div class="cheat-item"><b>The damage</b><span>40-60% of iOS conversion visibility lost; MTA now misses 30-60% of touchpoints overall.</span></div>
+      <div class="cheat-item"><b>The myth to bust</b><span>"Google kept cookies so MTA is fine" = FALSE. Chrome fixes one surface; Safari/Firefox/ATT already gutted coverage. MTA is still structurally broken.</span></div>
+      <div class="cheat-item"><b>Why MMM resurged</b><span>It uses aggregate data, so privacy loss barely touches it. Four free open-source toolkits: Google Meridian, Meta Robyn, PyMC-Marketing, +1.</span></div>
+      <div class="cheat-item"><b>Identity resolution</b><span>First-party data, clean rooms, server-side, consent-mode modeling = a patch layer, NOT a fix. It sharpens first-party signal, not the full journey.</span></div>
+      <div class="cheat-item"><b>The three vendor questions</b><span>1 What coverage do you really observe? 2 Do you offer aggregate MMM + lift? 3 Do you calibrate to a causal geo-test?</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 5 of 6 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a4-mmm-mta-incrementality.html">← Prev: MMM vs MTA vs incrementality</a> &nbsp;·&nbsp; <a href="a6-credit-to-budget.html">Next: From credit to budget →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

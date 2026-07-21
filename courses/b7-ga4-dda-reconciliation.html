@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 7 · GA4 DDA in practice + reconciling tools - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 7 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 7 of 10</div>
+    <h1>GA4 DDA in practice: <span class="accent">and reconciling the tools that all claim the sale</span></h1>
+    <p class="sub">GA4's Data-Driven Attribution is now the default, and it is Shapley with a time-decay twist - which means you already understand its engine. What you have to learn is its limits: it is a black box that only sees Google-observable touches, and it lives in a world where Meta and TikTok each self-attribute the very same conversion. Sum those platform numbers and your blended ROAS beats reality. This session is the builder's reconciliation job: pull GA4 DDA from the BigQuery export, line it up against your own warehouse model, de-duplicate, and treat every platform's self-reported number as a ceiling, not a truth.</p>
+    <div class="chip-row">
+      <span class="chip level" style="background:#FFF3EC;color:#F97316">🟠 Advanced</span>
+      <span class="chip audience">Builders · analytics engineers</span>
+      <span class="chip audience">GA4 + BigQuery</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-4 · Set-up</span>
+      <span class="a2" style="flex:4">4-18 · What DDA does</span>
+      <span class="a3" style="flex:3">18-30 · Double-counting</span>
+      <span class="a4" style="flex:4">30-45 · Reconcile</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The tool that grades its own homework</h2>
+    </div>
+    <p class="lede">Every ad platform in your stack shares one convenient habit: it reports the conversions it thinks it caused, and it is generous with itself. GA4, Meta, and TikTok will each raise a hand for the same Lumen order. Individually the numbers look great. Added up, they describe a business selling more than it actually sold. Your job as the builder is not to trust any single platform's self-attribution - it is to pull them into one warehouse, reconcile them against ground truth, and hand your leaders a de-duplicated number they can defend. GA4 DDA is a useful input to that. It is not the answer.</p>
+    <div class="legend">
+      <span class="pill solid">Live - coded in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - everyone runs it</span>
+      <span class="pill inkpill">The data: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you ship today</strong>
+      A query that pulls Lumen's conversions and channels from the GA4 BigQuery export, a reconciliation join that finds the orders GA4 and your warehouse both claim, and a single de-duplicated cross-platform ROAS view that survives contact with a CFO who asks "why do these three dashboards add up to more than our revenue?"
+    </div>
+  </section>
+
+  <!-- ============ PART 1: WHAT DDA DOES ============ -->
+  <section class="section" id="what-dda-does">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · under the hood</span>
+      <h2>What GA4 DDA actually does <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Google removed the rules-based models from GA4 reporting; Data-Driven Attribution is now the default. Under the hood it is close to what you have already built. DDA trains a model that predicts conversion probability from the journey, then runs the <strong>Shapley algorithm</strong> - feeding every combination of touchpoints (present or absent) through the trained probabilistic model to measure each touch's marginal effect - and layers in a <strong>time-decay</strong> element so more recent interactions carry more weight. Its defaults: the last 50 interactions per journey, a 90-day lookback. So far, so familiar. The catch is everything Google does <em>not</em> hand you.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GA4 DDA pipeline: journey to a trained model, Shapley over touchpoint combinations, then credit, with a black-box band because Google does not expose the model">
+        <style>
+          .ddT { font: 700 13.5px Inter, sans-serif; fill: #FFFFFF; }
+          .ddD { font: 400 11px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .ddX { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .ddN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .ddA { stroke: #B9D6D0; stroke-width: 2.4; fill: none; marker-end: url(#ddAh); }
+        </style>
+        <defs>
+          <marker id="ddAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <rect x="14" y="56" width="180" height="64" rx="12" fill="#0F766E"/>
+        <text class="ddT" x="30" y="84">Journey</text>
+        <text class="ddD" x="30" y="102">last 50 touches,</text>
+        <text class="ddD" x="30" y="116">90-day lookback</text>
+        <rect x="222" y="56" width="200" height="64" rx="12" fill="#10201E"/>
+        <text class="ddT" x="238" y="82">Trained model</text>
+        <text class="ddD" x="238" y="100">predicts P(convert)</text>
+        <text class="ddD" x="238" y="114" style="fill:#F97316">weights not exposed</text>
+        <rect x="450" y="56" width="200" height="64" rx="12" fill="#2A9D8F"/>
+        <text class="ddT" x="466" y="82">Shapley + decay</text>
+        <text class="ddD" x="466" y="100">every touch combo</text>
+        <text class="ddD" x="466" y="114">recent weighted more</text>
+        <rect x="678" y="56" width="180" height="64" rx="12" fill="#14B8A6"/>
+        <text class="ddT" x="694" y="84">Credit per</text>
+        <text class="ddT" x="694" y="102">channel</text>
+        <line class="ddA" x1="194" y1="88" x2="220" y2="88"/>
+        <line class="ddA" x1="422" y1="88" x2="448" y2="88"/>
+        <line class="ddA" x1="650" y1="88" x2="676" y2="88"/>
+        <rect x="222" y="46" width="200" height="84" rx="12" fill="none" stroke="#F97316" stroke-width="2.5" stroke-dasharray="6 4"/>
+        <text class="ddX" x="222" y="150" style="fill:#F97316;font-weight:700">▲ black box - the model and per-channel weights are Google's, not yours</text>
+        <rect x="14" y="176" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="ddN" x="36" y="187">DDA = Shapley + time-decay. Same engine you built in B5 - but you cannot inspect, audit, or reproduce its weights.</text>
+        <text class="ddX" x="14" y="218">Worse: it only sees Google-observable, consented, web/app touches. Your Meta, TikTok, CTV, and offline touches are invisible to it.</text>
+        <text class="ddX" x="14" y="240">So DDA is a partial view computed by a model you cannot open. Useful - but never mistake it for the full cross-channel journey.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - GA4 DDA is Shapley + time-decay inside a black box that only sees Google-observable touches</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Three limits that decide how you use DDA<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>DDA's engine is sound. Its blind spots are structural, and each one changes how much you can lean on it:</p>
+        <ul>
+          <li><strong>It is a black box.</strong> Google does not expose the model or the per-channel weights. You get the output credit, never the machinery. You cannot reproduce it, unit-test it, or explain a swing to a stakeholder from first principles - which is exactly why you also keep your own warehouse model.</li>
+          <li><strong>It only sees what Google can see.</strong> Consented, web/app, Google-observable touches. A journey that ran through Meta, TikTok, CTV, an influencer link, or an offline touch is - to DDA - simply not there. It attributes the credit it can see to the channels it can see.</li>
+          <li><strong>Its defaults are choices.</strong> Last 50 interactions, 90-day lookback. Fine for most, wrong for a long-consideration purchase. Know the window before you compare its numbers to anything.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A brand saw GA4 hand 55% of credit to organic and direct and concluded paid social "didn't work". What actually happened: the paid-social touches lived on Meta, which GA4 could not observe, so the credit collapsed onto the Google-visible tail of each journey. The black box wasn't lying - it was answering honestly about a journey it could only half see.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why the DDA weights aren't in the export<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Builders reach for the GA4 BigQuery export expecting to find the per-channel DDA weights sitting in a column. They are not there. The export gives you the raw events - traffic source, session, conversion value, timestamps - which is everything you need to build <em>your own</em> attribution. It does not give you Google's model output per touch, because the model is proprietary. That is not an oversight; it is the black box, made concrete. The practical consequence: from the export you reconstruct credit yourself, and you use the DDA numbers you see in the GA4 UI as a cross-check, not as a source of truth you can decompose.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: DOUBLE-COUNTING ============ -->
+  <section class="section" id="double-counting">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the core problem</span>
+      <h2>The double-counting problem <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Here is the failure that quietly inflates half the marketing reports in the world. GA4, Meta, and TikTok each run their own attribution and each self-report conversions. When a single Lumen customer sees a TikTok ad, clicks a Meta ad, and converts after a Google search, all three platforms claim that one $92 order. Add their conversion counts together and you get three sales from one. Divide spend by that inflated total and your blended ROAS looks heroic. It is arithmetic fiction. View-through versus click-through conventions and direct or branded-search inflation make it worse.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three overlapping platform circles - GA4, Meta, TikTok - all claiming the same single conversion, so summed ROAS exceeds reality">
+        <style>
+          .dcL { font: 700 14px Inter, sans-serif; fill: #10201E; }
+          .dcC { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .dcM { font: 600 12px Inter, sans-serif; fill: #5B7671; }
+          .dcN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .dcK { font: 700 12.5px Inter, sans-serif; fill: #FFFFFF; }
+        </style>
+        <circle cx="330" cy="130" r="105" fill="#0B4A45" fill-opacity="0.62"/>
+        <circle cx="470" cy="130" r="105" fill="#0F766E" fill-opacity="0.62"/>
+        <circle cx="400" cy="215" r="105" fill="#14B8A6" fill-opacity="0.62"/>
+        <text class="dcC" x="250" y="96">GA4</text>
+        <text class="dcC" x="512" y="96">Meta</text>
+        <text class="dcC" x="368" y="285">TikTok</text>
+        <rect x="338" y="150" width="126" height="40" rx="9" fill="#F97316"/>
+        <text class="dcK" x="352" y="175">1 order · $92</text>
+        <text class="dcL" x="600" y="96">Each platform claims it:</text>
+        <text class="dcM" x="600" y="122">GA4 says "+1 conversion"</text>
+        <text class="dcM" x="600" y="144">Meta says "+1 conversion"</text>
+        <text class="dcM" x="600" y="166">TikTok says "+1 conversion"</text>
+        <line x1="600" y1="182" x2="858" y2="182" stroke="#B9D6D0" stroke-width="1.5"/>
+        <text class="dcL" x="600" y="208">Summed = 3 sales from 1</text>
+        <text class="dcM" x="600" y="230">→ blended ROAS exceeds reality</text>
+        <rect x="30" y="262" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="dcN" x="52" y="273">One conversion, three claimants. Platform self-attribution is a ceiling, never a sum. De-dupe to one truthful row per order.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - one conversion claimed by GA4, Meta, and TikTok; add them up and the business looks 3x bigger than it is</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why platform numbers are a ceiling, not a truth<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Every self-attributing platform is optimizing to justify its own spend. That is not villainy; it is incentive. But it means their conversion counts share three inflation habits you have to strip out:</p>
+        <ul>
+          <li><strong>Overlapping claims.</strong> The same order appears in multiple platforms' totals. Summed, they overstate. The fix is de-duplication against a single order key from your warehouse.</li>
+          <li><strong>View-through generosity.</strong> Some platforms count a conversion when the user merely <em>saw</em> an ad (view-through), not clicked. Compare view-through and click-through numbers separately - they are not the same currency.</li>
+          <li><strong>Direct and branded-search inflation.</strong> A user who already decided to buy types "lumen serum" - branded search or direct traffic grabs a last-click it did not earn. Ground truth is your order table, not the platform tag.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The reconciliation mindset</strong>
+          Treat every platform's self-reported conversions as the <em>most it could possibly have driven</em> - a ceiling. Your job is to work down from those ceilings to one de-duplicated number tied to real orders, not up from zero by trusting each tag.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: RECONCILIATION WORKFLOW ============ -->
+  <section class="section" id="reconciliation">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the builder's job</span>
+      <h2>The reconciliation workflow <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Reconciliation is a pipeline, not an opinion. You pull each source into the warehouse, key everything to a real order, de-duplicate the overlapping claims, and compute ROAS against actual revenue. GA4 DDA becomes one input in that pipeline - valuable for the Google-observable slice, but reconciled against your own touchpoint model and the raw platform exports rather than trusted on its own.</p>
+    <div class="steps">
+      <div class="step"><p><strong>Land everything in one place.</strong> GA4 DDA from the BigQuery export, Meta and TikTok conversion exports, and your own warehouse touchpoint model (B1-B5) - all into the warehouse, all keyed to <code>order_id</code>.</p></div>
+      <div class="step"><p><strong>De-duplicate against ground truth.</strong> Your order table is the single source of what actually sold. Every platform claim gets matched to a real order; unmatched claims are flagged, not summed.</p></div>
+      <div class="step"><p><strong>Treat self-attribution as a ceiling.</strong> Where platforms overlap on one order, keep the order once. The platform totals become upper bounds you reconcile down from, never numbers you add together.</p></div>
+      <div class="step"><p><strong>Report one de-duplicated ROAS.</strong> Total spend over de-duplicated real revenue - a blended number that ties back to the P&amp;L. Then, and only then, break it down by your own attribution model for channel-level decisions.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Pull GA4 DDA credit from the BigQuery export <span class="tag demo">★ 11 min · everyone</span></h2>
+    </div>
+    <p class="lede">GA4 exports one row per event to BigQuery. We pull Lumen's purchase conversions with each session's channel and order value. Remember: the DDA per-channel weights are not in the export - so we pull the raw events and reconstruct, using the GA4 UI's DDA numbers only as a cross-check.</p>
+    <div class="prompt-box good">
+      <span class="label">SQL · GA4 events export → conversions + channel</span>
+-- GA4 BigQuery export: analytics_&lt;property&gt;.events_*  (one row per event)
+-- The DDA per-channel *weights* are NOT here - Google keeps the model.
+-- We pull the raw conversions + channel so we can reconcile ourselves.
+SELECT
+  user_pseudo_id,
+  event_timestamp,
+  traffic_source.medium AS channel_medium,
+  traffic_source.source AS channel_source,
+  (SELECT value.string_value
+     FROM UNNEST(event_params)
+    WHERE key = 'transaction_id') AS order_id,
+  (SELECT value.double_value
+     FROM UNNEST(event_params)
+    WHERE key = 'value')          AS order_value
+FROM `analytics_318290.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20260401' AND '20260630'
+  AND event_name = 'purchase'
+ORDER BY event_timestamp;
+    </div>
+    <div class="steps">
+      <div class="step"><p><strong>UNNEST the event params.</strong> GA4 stores conversion value and transaction id inside a repeated <code>event_params</code> field. The correlated sub-selects pull each key out into a flat column.</p></div>
+      <div class="step"><p><strong>Key on transaction_id.</strong> That is your join to the warehouse order table - the anchor for the whole reconciliation. Without a shared order key you cannot de-duplicate.</p></div>
+      <div class="step"><p><strong>Accept the limit up front.</strong> This gives you Google-observable, consented touches only. It is the Google slice of the truth, not the truth - which is exactly why Build-along 2 exists.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>Teams burn a day looking for a "dda_credit" column in the export before someone points out it does not exist. The export is raw events by design. Read the DDA output in the GA4 UI, pull the raw events here, and reconcile the two - that is the whole workflow, and knowing it saves the wasted day.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>Reconcile GA4 vs your warehouse model <span class="tag demo">★ 11 min · everyone</span></h2>
+    </div>
+    <p class="lede">Now we join GA4's conversions to our own warehouse touchpoint model on <code>order_id</code> and find the overlap: the orders both systems claim. An outer join with an indicator makes the three buckets - both, GA4-only, warehouse-only - fall out cleanly.</p>
+    <div class="prompt-box good">
+      <span class="label">Python · outer join + dedupe on order_id</span>
+import pandas as pd
+
+# ga4: conversions pulled from the export (Build-along 1)
+# wh:  our own warehouse touchpoint-model credit (B1-B5)
+merged = ga4.merge(
+    wh, on="order_id", how="outer",
+    suffixes=("_ga4", "_wh"), indicator=True)
+
+both     = merged[merged["_merge"] == "both"]        # same sale, counted ONCE
+ga4_only = merged[merged["_merge"] == "left_only"]   # GA4 sees, we don't
+wh_only  = merged[merged["_merge"] == "right_only"]  # we see, GA4 can't
+
+print(f"orders both claim : {len(both):,}  -> keep once")
+print(f"GA4-only orders   : {len(ga4_only):,}")
+print(f"warehouse-only    : {len(wh_only):,}  (often non-Google journeys)")
+    </div>
+    <div class="steps">
+      <div class="step"><p><strong>The <code>indicator=True</code> column is the whole trick.</strong> It labels every row both, left_only, or right_only, so de-duplication becomes a filter instead of a guess.</p></div>
+      <div class="step"><p><strong>Warehouse-only orders are the signal.</strong> These are conversions GA4 could not see - Meta, TikTok, CTV, offline. Their count is a direct measure of how much of Lumen's journey lives outside Google's view.</p></div>
+      <div class="step"><p><strong>"Both" gets counted once.</strong> That is the de-duplication in action: an order GA4 and your model both claim is still one order. Never add the two systems' totals.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>Watch the join keys</strong>
+      GA4's transaction_id and your warehouse order_id must be the same string - trailing whitespace, casing, or a currency prefix will silently drop matches into "GA4-only" and "warehouse-only", inventing a discrepancy that is really a data-cleaning bug. Validate the key before you trust the buckets.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>Build a de-duplicated cross-platform ROAS view <span class="tag demo">★ 8 min · everyone</span></h2>
+    </div>
+    <p class="lede">Finally we fold GA4, Meta, and TikTok claims into one truthful row per order and compute a blended ROAS against actual revenue - the number that ties back to the P&amp;L instead of triple-counting the same sale.</p>
+    <div class="prompt-box good">
+      <span class="label">SQL · one truthful row per order → blended ROAS</span>
+-- each platform self-reports the SAME orders. Summing = double-counting.
+-- De-dupe to one row per order, then ROAS against ACTUAL revenue.
+WITH claims AS (
+  SELECT order_id, 'ga4'    AS platform, revenue FROM ga4_conversions
+  UNION ALL
+  SELECT order_id, 'meta'   AS platform, revenue FROM meta_conversions
+  UNION ALL
+  SELECT order_id, 'tiktok' AS platform, revenue FROM tiktok_conversions
+),
+deduped AS (                       -- one truthful row per order
+  SELECT order_id, MAX(revenue) AS order_value
+  FROM claims
+  GROUP BY order_id
+)
+SELECT
+  SUM(order_value)                                     AS real_revenue,
+  (SELECT SUM(spend) FROM ad_spend)                    AS total_spend,
+  SUM(order_value) / (SELECT SUM(spend) FROM ad_spend) AS blended_roas
+FROM deduped;
+    </div>
+    <div class="steps">
+      <div class="step"><p><strong>UNION ALL then GROUP BY collapses the claims.</strong> Three platforms claiming one order become three rows, then <code>GROUP BY order_id</code> collapses them to one. The double-count is gone.</p></div>
+      <div class="step"><p><strong>ROAS uses de-duplicated revenue.</strong> Sum the real per-order value, divide by real spend. Compare this honest blended number to the sum of the three platform dashboards and watch the gap - that gap was the fiction.</p></div>
+      <div class="step"><p><strong>Blend first, attribute second.</strong> This de-duplicated total is the trustworthy top-line. Only after it is locked do you split channel credit with your own model - never with the platforms' self-attribution.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>One team's three platform dashboards summed to a 6.2x ROAS; the de-duplicated warehouse view came in at 3.4x. Nothing was broken - the platforms were each honestly claiming shared conversions. The de-duplicated number was the one the CFO could act on, and presenting both side by side is what finally ended the "which dashboard is right?" argument.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Builder Session 8</span>
+      <h2>This week <span class="tag exercise">◐ 45 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Quantify the overlap.</strong> Run the reconciliation join on Lumen and report three numbers: orders both GA4 and your model claim, GA4-only, and warehouse-only. What share of conversions is invisible to GA4?</li>
+      <li><strong>Measure the inflation.</strong> Sum the three platform conversion counts, then compare to the de-duplicated total. Express the double-count as a percentage - that is the number your leaders most need to see.</li>
+      <li><strong>Document the DDA window.</strong> Note GA4's defaults (last 50 interactions, 90-day lookback) and decide whether they fit Lumen's 7-21 day consideration cycle. Write one line on what you would change and why.</li>
+      <li><strong>Optional:</strong> split blended ROAS into view-through and click-through and see how much of the "conversions" were view-through - a preview of why incrementality (B9) exists.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · GA4 Data-Driven Attribution is best described as...</p>
+      <button class="qopt" type="button">A · A rules-based last-click model you configure in the UI</button>
+      <button class="qopt" type="button">B · A Shapley-plus-time-decay model, a black box, that only sees Google-observable consented touches</button>
+      <button class="qopt" type="button">C · A full cross-channel view including Meta and TikTok touches</button>
+      <p class="qwhy">DDA is Shapley with a time-decay element, trained on conversion probability. Google does not expose the model or per-channel weights, and it only observes Google-visible, consented web/app touches - so it is a partial view inside a black box.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Why does summing GA4, Meta, and TikTok conversions overstate performance?</p>
+      <button class="qopt" type="button">A · Each platform self-attributes and claims the same conversion, so the totals double-count one sale</button>
+      <button class="qopt" type="button">B · The platforms use different currencies</button>
+      <button class="qopt" type="button">C · GA4 undercounts on purpose</button>
+      <p class="qwhy">One customer, one order, three platforms all raising a hand. Add their counts and one sale becomes three; divide spend by that inflated total and blended ROAS beats reality. De-duplicate to one row per order.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">3 · How should you treat a platform's self-reported conversions?</p>
+      <button class="qopt" type="button">A · As ground truth - the platform knows best</button>
+      <button class="qopt" type="button">B · As a number to add to every other platform's total</button>
+      <button class="qopt" type="button">C · As a ceiling - the most it could have driven - to reconcile down from against real orders</button>
+      <p class="qwhy">Self-attribution is incentive-driven and overlaps across tools. Treat each platform's count as an upper bound, key everything to real orders, de-duplicate, and report one blended number tied to actual revenue.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session turns the GA4 attribution documentation and the Analytics certification material into a builder's reconciliation workflow - DDA's engine and limits, the cross-platform double-counting problem, and the de-duplication that fixes it. Vendor certificates stay official.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Google Analytics attribution + DDA (Skillshop / Analytics Certification)</span><span class="note">DDA as Shapley + time-decay, defaults - Part 1</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">GA4 BigQuery export schema (GA4 docs)</span><span class="note">events export, event_params, traffic source - Build-along 1</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Cross-platform double-counting + reconciliation</span><span class="note">self-attribution as a ceiling, de-dupe - Parts 2-3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Why correlational credit still isn't causal</span><span class="note">the case for holdout tests - Builder Session 9</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Mix modeling for the un-observable channels</span><span class="note">the aggregate answer - Builder Session 8</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 7 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>GA4 DDA engine</b><span>Shapley + time-decay over touchpoint combinations, trained on conversion probability. Defaults: last 50 touches, 90-day lookback.</span></div>
+      <div class="cheat-item"><b>Black box</b><span>Google does not expose the model or per-channel weights. You get output credit, never the machinery - so keep your own model too.</span></div>
+      <div class="cheat-item"><b>Google-observable only</b><span>DDA sees consented web/app Google-visible touches. Meta, TikTok, CTV, offline are invisible to it - not the full journey.</span></div>
+      <div class="cheat-item"><b>Double-counting</b><span>GA4 + Meta + TikTok each self-attribute the same order. Summed conversions and ROAS exceed reality. De-dupe on order_id.</span></div>
+      <div class="cheat-item"><b>Self-attribution = ceiling</b><span>Treat each platform's count as the most it could have driven, not a number to sum. Reconcile down to real orders.</span></div>
+      <div class="cheat-item"><b>The export has no dda column</b><span>Pull raw events (transaction_id, value, traffic source), reconstruct credit yourself, cross-check against the GA4 UI's DDA.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 7 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b6-ml-dl-attribution.html">← Prev: ML and deep-learning attribution</a> &nbsp;·&nbsp; <a href="b8-mmm-adstock-saturation.html">Next: MMM: adstock and saturation →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 5 · Shapley value attribution from scratch - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 5 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 5 of 10</div>
+    <h1>Shapley value attribution, <span class="accent">from first principles</span></h1>
+    <p class="sub">Markov asked "what breaks if this channel leaves?" Shapley asks a fairer question borrowed from game theory: "across every possible order the channels could have joined, what did this one add on average?" We derive the formula, hand-verify a three-channel example that sums cleanly to the grand coalition, code exact Shapley with itertools, then Monte-Carlo it for when the channel count makes exact impossible.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Builders · practitioner</span>
+      <span class="chip audience">Python + itertools</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Setup</span>
+      <span class="a2" style="flex:3">3-18 · The game</span>
+      <span class="a3" style="flex:5">18-40 · Build it</span>
+      <span class="a4" style="flex:1">40-45 · Recap</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>A fairness idea from 1953, aimed at your media mix</h2>
+    </div>
+    <p class="lede">In 1953 the mathematician Lloyd Shapley solved a question that had nothing to do with marketing: when a team produces value together, how much did each member fairly earn? His answer - the Shapley value - is the <strong>only</strong> credit split that satisfies four intuitive fairness axioms at once, and it turns out to be exactly the tool we want for attribution. Treat channels as players in a cooperative game, treat conversions as the payout, and Shapley tells you each channel's fair share.</p>
+    <div class="legend">
+      <span class="pill solid">Live - built together in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - everyone runs it</span>
+      <span class="pill inkpill">The data: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A from-scratch exact Shapley attributor - the characteristic function from Lumen coalitions, the factorial-weighted marginal-contribution sum, and a hand-verified reconciliation to the efficiency axiom - plus a Monte-Carlo version for when you have too many channels to enumerate every subset, and the bridge to SHAP that carries you into next session.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: MARGINAL CONTRIBUTION ============ -->
+  <section class="section" id="marginal">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the game</span>
+      <h2>Channels as a team: marginal contribution <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">The core idea is <strong>marginal contribution</strong>. A channel's value is how much conversion rises when it <em>joins</em> a group of channels that were already working together. But that number depends on who was already in the room, so Shapley averages the marginal contribution across every possible order the channels could have joined. Fair credit is your average lift, taken over all the coalitions you might have joined.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Channel A joining a coalition step by step: from empty set to A, to A and B, to A B and C, each join adding a marginal value">
+        <style>
+          .sh1T { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .sh1L { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .sh1M { font: 700 13px Inter, sans-serif; fill: #0F766E; }
+          .sh1X { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .sh1N { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .sh1A { stroke: #B9D6D0; stroke-width: 2.2; fill: none; marker-end: url(#sh1ah); }
+        </style>
+        <defs>
+          <marker id="sh1ah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- coalition ladder -->
+        <text class="sh1L" x="30" y="40">One ordering: the empty set, then A joins, then B, then C</text>
+        <!-- rung 0: {} -->
+        <rect x="30" y="70" width="120" height="48" rx="11" fill="#5EEAD4"/>
+        <text class="sh1L" x="72" y="99">{ } = 0.00</text>
+        <!-- rung 1: {A} -->
+        <rect x="250" y="70" width="140" height="48" rx="11" fill="#0B4A45"/>
+        <text class="sh1T" x="286" y="99">{A} = 0.20</text>
+        <!-- rung 2: {A,B} -->
+        <rect x="490" y="70" width="150" height="48" rx="11" fill="#0F766E"/>
+        <text class="sh1T" x="520" y="99">{A,B} = 0.35</text>
+        <!-- rung 3: {A,B,C} -->
+        <rect x="730" y="70" width="120" height="48" rx="11" fill="#14B8A6"/>
+        <text class="sh1T" x="748" y="99">{ABC}=0.45</text>
+        <!-- arrows + marginal labels -->
+        <line class="sh1A" x1="150" y1="94" x2="248" y2="94"/>
+        <text class="sh1M" x="160" y="140">A adds</text>
+        <text class="sh1M" x="160" y="158">+0.20</text>
+        <line class="sh1A" x1="390" y1="94" x2="488" y2="94"/>
+        <text class="sh1M" x="400" y="140">B adds</text>
+        <text class="sh1M" x="400" y="158">+0.15</text>
+        <line class="sh1A" x1="640" y1="94" x2="728" y2="94"/>
+        <text class="sh1M" x="648" y="140">C adds</text>
+        <text class="sh1M" x="648" y="158">+0.10</text>
+        <!-- averaging note -->
+        <rect x="30" y="200" width="820" height="70" rx="14" fill="#F97316"/>
+        <text class="sh1L" x="52" y="230" style="fill:#431407">This is just ONE of the 6 orderings. A's credit φ(A) = its marginal contribution averaged over</text>
+        <text class="sh1L" x="52" y="252" style="fill:#431407">ALL orderings. Here A joined first (+0.20); in "B then A" it would add v(AB) − v(B) = 0.25 instead.</text>
+        <rect x="30" y="298" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="sh1N" x="52" y="309">The marginal contribution changes with who joined first - averaging over every order is what makes the split fair.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - channel A's marginal contribution as it joins a growing coalition (values are Lumen conversion rates for the A/B/C slice)</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The characteristic function, and the formula<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Everything rests on one function, <strong>v(S)</strong> - the "characteristic function" - which says how much value a coalition S of channels produces. For attribution we define v(S) as the <strong>conversion rate of journeys that used exactly the channel set S</strong>. Then channel i's Shapley value is:</p>
+        <p style="font-weight:600;color:var(--ink)">φ<sub>i</sub> = Σ<sub>S ⊆ N∖{i}</sub> [ |S|! · (n − |S| − 1)! / n! ] · ( v(S ∪ {i}) − v(S) )</p>
+        <ul>
+          <li><strong>v(S ∪ {i}) − v(S)</strong> is i's marginal contribution: how much conversion rises when i joins coalition S.</li>
+          <li><strong>|S|! · (n − |S| − 1)! / n!</strong> is the weight - the fraction of orderings in which exactly the members of S come before i. It is just the bookkeeping that turns "sum over subsets" into "average over orderings".</li>
+          <li>Sum that weighted marginal over every subset S that excludes i, and you have i's fair share.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>Two ways to say the same thing</strong>
+          You can sum over subsets with factorial weights, or you can literally average the marginal contribution over all n! orderings. They give identical answers - the weights are exactly the count of orderings each subset represents. We will code the subset form; it is faster.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The four axioms that make Shapley "fair"<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Shapley is not just <em>a</em> way to split credit - it is the unique split satisfying all four of these at once:</p>
+        <ul>
+          <li><strong>Efficiency:</strong> the shares sum to exactly the grand-coalition value v(N). Every conversion is fully accounted for, nothing invented or lost.</li>
+          <li><strong>Symmetry:</strong> two channels that add the same marginal value to every coalition get the same credit. Identity does not matter, contribution does.</li>
+          <li><strong>Null player:</strong> a channel that never changes any coalition's value gets zero. No free credit for being present.</li>
+          <li><strong>Additivity:</strong> credit over two combined games equals the sum of credit in each - so you can decompose, say, two product lines and add them.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>The efficiency axiom is what makes finance trust Shapley: because the shares provably sum to the total conversions, you can multiply each share by revenue and the channel credits reconcile to the top line to the penny. Markov needs a normalization step to get there; Shapley gets there by construction.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: WORKED EXAMPLE + EFFICIENCY ============ -->
+  <section class="section" id="worked">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · worked by hand</span>
+      <h2>The three-channel example + the efficiency axiom <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Take a three-channel Lumen slice - A (paid social), B (email), C (display) - with these coalition conversion rates: v(A)=.20, v(B)=.10, v(C)=.05, v(AB)=.35, v(AC)=.30, v(BC)=.20, v(ABC)=.45. We average each channel's marginal contribution over all 6 orderings and watch the shares reconcile to v(ABC).</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A table of six orderings with each channel's marginal contribution, averaging to Shapley values 0.233, 0.133 and 0.083 that sum to 0.449, matching the grand coalition value 0.45">
+        <style>
+          .sh2H { font: 700 12px Inter, sans-serif; fill: #FFFFFF; }
+          .sh2R { font: 600 12px Inter, sans-serif; fill: #10201E; }
+          .sh2C { font: 600 12px Inter, sans-serif; fill: #5B7671; }
+          .sh2P { font: 800 15px Inter, sans-serif; fill: #FFFFFF; }
+          .sh2N { font: 700 12px Inter, sans-serif; fill: #10201E; }
+        </style>
+        <!-- header -->
+        <rect x="30" y="24" width="820" height="30" rx="7" fill="#0B4A45"/>
+        <text class="sh2H" x="48" y="44">Ordering</text>
+        <text class="sh2H" x="470" y="44">A adds</text>
+        <text class="sh2H" x="600" y="44">B adds</text>
+        <text class="sh2H" x="730" y="44">C adds</text>
+        <!-- rows -->
+        <text class="sh2R" x="48" y="78">A → B → C</text><text class="sh2C" x="470" y="78">0.20</text><text class="sh2C" x="600" y="78">0.15</text><text class="sh2C" x="730" y="78">0.10</text>
+        <text class="sh2R" x="48" y="104">A → C → B</text><text class="sh2C" x="470" y="104">0.20</text><text class="sh2C" x="600" y="104">0.15</text><text class="sh2C" x="730" y="104">0.10</text>
+        <text class="sh2R" x="48" y="130">B → A → C</text><text class="sh2C" x="470" y="130">0.25</text><text class="sh2C" x="600" y="130">0.10</text><text class="sh2C" x="730" y="130">0.10</text>
+        <text class="sh2R" x="48" y="156">B → C → A</text><text class="sh2C" x="470" y="156">0.25</text><text class="sh2C" x="600" y="156">0.10</text><text class="sh2C" x="730" y="156">0.10</text>
+        <text class="sh2R" x="48" y="182">C → A → B</text><text class="sh2C" x="470" y="182">0.25</text><text class="sh2C" x="600" y="182">0.15</text><text class="sh2C" x="730" y="182">0.05</text>
+        <text class="sh2R" x="48" y="208">C → B → A</text><text class="sh2C" x="470" y="208">0.25</text><text class="sh2C" x="600" y="208">0.15</text><text class="sh2C" x="730" y="208">0.05</text>
+        <line x1="30" y1="222" x2="850" y2="222" stroke="#DCEDE9" stroke-width="1.5"/>
+        <text class="sh2R" x="48" y="246" style="font-weight:700">Average = φ</text>
+        <text class="sh2R" x="462" y="246" style="font-weight:800;fill:#0F766E">0.233</text>
+        <text class="sh2R" x="592" y="246" style="font-weight:800;fill:#0F766E">0.133</text>
+        <text class="sh2R" x="722" y="246" style="font-weight:800;fill:#0F766E">0.083</text>
+        <!-- efficiency box -->
+        <rect x="30" y="272" width="500" height="56" rx="12" fill="#14B8A6"/>
+        <text class="sh2P" x="52" y="306">φA + φB + φC = 0.449  ≈  v(ABC) = 0.45</text>
+        <rect x="548" y="272" width="302" height="56" rx="12" fill="#F97316"/>
+        <text class="sh2P" x="568" y="298" style="fill:#431407">Normalized credit</text>
+        <text class="sh2R" x="568" y="320" style="fill:#431407;font-weight:700">A 51.9% · B 29.6% · C 18.5%</text>
+        <rect x="30" y="352" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="sh2N" x="52" y="363">The shares summing to the grand-coalition value is the efficiency axiom in action - no normalization step needed, it holds by construction.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - six orderings, each channel's marginal contribution averaged into its Shapley value, summing to v(ABC)</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Read one column, then trust the average<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Take channel A's column. In the two orderings where A joins first, it adds v(A) − v({}) = 0.20. In the four orderings where A joins after someone, it adds more, because it lifts an existing coalition: after B it adds v(AB) − v(B) = 0.25, after C it adds v(AC) − v(C) = 0.25, and after both it adds v(ABC) − v(BC) = 0.25. Average all six: (0.20 + 0.20 + 0.25 + 0.25 + 0.25 + 0.25) / 6 = <strong>0.233</strong>. Do the same for B and C to get 0.133 and 0.083.</p>
+        <ul>
+          <li><strong>Sum check:</strong> 0.233 + 0.133 + 0.083 = 0.449, and v(ABC) = 0.45. The tiny gap is rounding - the true values sum exactly. That is efficiency, guaranteed.</li>
+          <li><strong>Normalize for reporting:</strong> divide by the sum to express as percentages of credit - A 51.9%, B 29.6%, C 18.5% - which you multiply against revenue.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>Shapley shares synergy</strong>
+          Notice A and B together (0.35) beat their solo sum (0.20 + 0.10 = 0.30). That 0.05 of synergy is not thrown away or handed to one channel - Shapley splits it fairly across the pair through the averaging. That surplus-sharing is exactly what heuristics cannot do.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE O(2^n) WALL ============ -->
+  <section class="section" id="scaling">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the wall</span>
+      <h2>The O(2ⁿ) wall, Monte-Carlo Shapley, the SHAP bridge <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Exact Shapley is beautiful and expensive. The formula sums over every subset of channels, and there are 2ⁿ of them - fine for Lumen's handful of channels, ruinous once you have thirty. Here is the wall, and the two escape routes.</p>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Exact is O(2ⁿ) - so sample instead<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Every channel's Shapley value sums over all subsets of the others, so the work grows as 2ⁿ. At 10 channels that is ~1,000 coalitions - instant. At 15 it is ~33,000 - still fine. At 25 it is 33 million, and at 40 it is a trillion. You hit the wall fast.</p>
+        <ul>
+          <li><strong>Monte-Carlo Shapley:</strong> instead of enumerating every ordering, sample random orderings, compute each channel's marginal contribution in each sampled order, and average. It converges to the exact Shapley value and lets you trade accuracy for runtime with the sample count.</li>
+          <li><strong>Restrict to observed coalitions:</strong> most of the 2ⁿ subsets never actually occur in your data. Defining v(S) only over coalitions your customers really traversed prunes the space enormously and keeps every number grounded in real journeys.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Defining v(S) is itself a modeling choice, and it matters. The simplest is the observed conversion rate of journeys using exactly set S. A richer alternative feeds S into a trained model and uses its predicted conversion probability as v(S) - which handles unseen coalitions gracefully and leads straight into the next idea.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The SHAP bridge into production ML<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The same Shapley math powers <strong>SHAP</strong> (SHapley Additive exPlanations), the standard way to explain any trained machine-learning model. Swap "channels" for "features" and "conversion rate of a coalition" for "the model's prediction given a subset of features", and each feature's SHAP value is its fair contribution to that one prediction - computed with Shapley's exact same averaging.</p>
+        <ul>
+          <li><strong>Why it is the pragmatic path:</strong> you train a strong conversion model on all your touch features, then let SHAP attribute credit - getting Shapley fairness plus a model that generalizes to coalitions you never observed.</li>
+          <li><strong>Where we are headed:</strong> B6 builds exactly this - a LightGBM conversion model explained with the <code>shap</code> library - so today's from-scratch Shapley is the conceptual key that unlocks production ML attribution.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Define v(S) from Lumen coalition conversion rates <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">The characteristic function first. From the sessionized Lumen journeys, we compute the conversion rate of the set of channels each journey used, then look v(S) up by coalition. This is the value function every Shapley computation calls.</p>
+    <div class="prompt-box good">
+      <span class="label">Demo 1 · the value function v(S)</span>
+      <button class="copy-btn" type="button">Copy</button>import pandas as pd
+
+# Lumen journeys: the unordered SET of channels used + whether it converted.
+# (Sets, because v(S) is defined on coalitions, not ordered paths.)
+journeys = pd.DataFrame({
+    "channel_set": [frozenset({"A"}), frozenset({"A", "B"}),
+                    frozenset({"A", "B", "C"}), frozenset({"B", "C"})],
+    "converted":   [1, 1, 1, 0],
+    "n":           [100, 100, 100, 100],   # journeys of that exact set
+})
+
+# v(S) = conversion rate over journeys whose channel set is a SUBSET of S.
+def make_v(journeys):
+    rates = {}
+    for S in journeys["channel_set"]:
+        mask = journeys["channel_set"].apply(lambda cs: cs.issubset(S))
+        conv = (journeys.loc[mask, "converted"] * journeys.loc[mask, "n"]).sum()
+        tot  = journeys.loc[mask, "n"].sum()
+        rates[frozenset(S)] = conv / tot if tot else 0.0
+    return lambda S: rates.get(frozenset(S), 0.0)
+
+v = make_v(journeys)
+# For the taught slice we use these hand-set rates directly:
+V = {frozenset(): 0.0,
+     frozenset("A"): .20, frozenset("B"): .10, frozenset("C"): .05,
+     frozenset("AB"): .35, frozenset("AC"): .30, frozenset("BC"): .20,
+     frozenset("ABC"): .45}
+v = lambda S: V[frozenset(S)] </div>
+    <div class="callout tip">
+      <strong>v(S) is the one real modeling choice</strong>
+      Everything downstream is mechanical; how you define v(S) is where the judgement lives. Observed-coalition conversion rate keeps it simple and grounded. A trained model's predicted probability generalizes to unseen coalitions. Pick deliberately and write down which you used.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>Exact Shapley with itertools + factorial weights <span class="tag demo">★ 8 min · everyone</span></h2>
+    </div>
+    <p class="lede">Now the formula, exactly. For each channel we sum over every subset of the others (the powerset via itertools), weight each marginal contribution by |S|!·(n−|S|−1)!/n!, and add them up. Run it on the slice and confirm 0.233 / 0.133 / 0.083.</p>
+    <div class="prompt-box good">
+      <span class="label">Demo 2 · exact Shapley</span>
+      <button class="copy-btn" type="button">Copy</button>from itertools import combinations
+from math import factorial
+
+def powerset(players):
+    for r in range(len(players) + 1):
+        for combo in combinations(players, r):
+            yield frozenset(combo)
+
+def shapley(players, v):
+    n = len(players)
+    phi = {}
+    for i in players:
+        others = [p for p in players if p != i]
+        total = 0.0
+        for S in powerset(others):                 # every coalition without i
+            weight = factorial(len(S)) * factorial(n - len(S) - 1) / factorial(n)
+            marginal = v(S | {i}) - v(S)            # what i adds to S
+            total += weight * marginal
+        phi[i] = total
+    return phi
+
+phi = shapley(["A", "B", "C"], v)
+print({k: round(x, 3) for k, x in phi.items()})
+# {'A': 0.233, 'B': 0.133, 'C': 0.083}
+print(round(sum(phi.values()), 3), "vs v(ABC) =", v({"A","B","C"}))
+# 0.45 vs v(ABC) = 0.45   -> efficiency holds
+
+total = sum(phi.values())
+credit = {k: round(x / total, 3) for k, x in phi.items()}
+print(credit)   # {'A': 0.519, 'B': 0.296, 'C': 0.185} </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>Always print the sum-vs-v(ABC) line as your unit test. If Shapley values do not sum to the grand-coalition value, your v(S) is inconsistent (often the empty coalition is not zero, or a subset rate was mistyped). The efficiency axiom is a free correctness check you get on every run.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>Monte-Carlo Shapley for many channels <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">Lumen has 9 channels - exact is fine. But the moment you cross ~20 you need to sample. Monte-Carlo Shapley draws random orderings, adds each channel to a growing coalition in that order, and averages the marginal contributions. More samples, tighter estimate.</p>
+    <div class="prompt-box good">
+      <span class="label">Demo 3 · Monte-Carlo Shapley</span>
+      <button class="copy-btn" type="button">Copy</button>import random
+
+def shapley_mc(players, v, samples=20000, seed=42):
+    random.seed(seed)                       # reproducible, per workspace rule
+    n = len(players)
+    running = {i: 0.0 for i in players}
+    for _ in range(samples):
+        order = random.sample(players, n)   # one random ordering
+        coalition = set()
+        prev = v(frozenset())               # value of empty coalition
+        for i in order:
+            coalition.add(i)
+            cur = v(frozenset(coalition))
+            running[i] += cur - prev         # i's marginal in this order
+            prev = cur
+    return {i: running[i] / samples for i in players}
+
+approx = shapley_mc(["A", "B", "C"], v, samples=20000)
+print({k: round(x, 3) for k, x in approx.items()})
+# ~ {'A': 0.233, 'B': 0.133, 'C': 0.083}  -> converges to exact </div>
+    <div class="callout tip">
+      <strong>From here, the library does the heavy lifting</strong>
+      Once you understand this loop, reach for tooling: DP6's marketing-attribution-models has a Shapley implementation for path data, and for model-based attribution the <code>shap</code> library computes the same values over a trained conversion model - the exact bridge into B6. Build it once to trust it, then let the library scale it.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 6</span>
+      <h2>This week <span class="tag exercise">◐ 40 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Reproduce the slice</strong> and confirm exact Shapley gives A 0.233 / B 0.133 / C 0.083, summing to 0.449 (≈ v(ABC) = 0.45). Watch the efficiency check pass.</li>
+      <li><strong>Build v(S) for all 9 Lumen channels</strong> from the coalition conversion rates in your journey table, then run exact Shapley. Time it - 2⁹ = 512 coalitions, still instant.</li>
+      <li><strong>Compare exact vs Monte-Carlo</strong> on the 9-channel case at 1k, 10k and 100k samples. Plot how the estimate tightens toward exact as samples grow.</li>
+      <li><strong>Optional:</strong> line up your Shapley credit next to last session's Markov credit for the same Lumen data. Where do they agree, where do they diverge, and what would you tell the CMO about why?</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · A channel's Shapley value is...</p>
+      <button class="qopt" type="button">A · The conversion rate of journeys where it took the last touch</button>
+      <button class="qopt" type="button">B · Its marginal contribution to conversion, averaged over every order the channels could have joined</button>
+      <button class="qopt" type="button">C · The number of coalitions it appears in</button>
+      <p class="qwhy">Shapley averages how much a channel adds when it joins a coalition, across all possible join orders. That average marginal contribution is its fair share of the payout.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · The efficiency axiom guarantees that the Shapley values...</p>
+      <button class="qopt" type="button">A · Are all positive</button>
+      <button class="qopt" type="button">B · Are equal for every channel</button>
+      <button class="qopt" type="button">C · Sum to the grand-coalition value v(N) - so credit reconciles to the total by construction</button>
+      <p class="qwhy">Efficiency means the shares add up to exactly v(N). Unlike Markov removal effects, Shapley values need no normalization to reconcile - it holds automatically, and doubles as a correctness check.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Exact Shapley is O(2ⁿ). With 30 channels you should...</p>
+      <button class="qopt" type="button">A · Use Monte-Carlo Shapley - sample random orderings and average - or restrict v(S) to observed coalitions</button>
+      <button class="qopt" type="button">B · Give up on Shapley entirely and go back to last-touch</button>
+      <button class="qopt" type="button">C · Enumerate all 2³⁰ subsets anyway; modern laptops are fast</button>
+      <p class="qwhy">2³⁰ is over a billion coalitions - infeasible. Monte-Carlo Shapley approximates the exact value by sampling orderings, and restricting to observed coalitions prunes the space to what actually occurred.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session owns Coverage Gap #1 for Shapley: the game-theoretic derivation, the exact itertools implementation, the efficiency check and the Monte-Carlo scale-up - built from scratch, then bridged to SHAP. Most courses cite Shapley and jump straight to a library; we derive it so you can defend every number.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Coverage Gap #1 - Shapley from scratch (original)</span><span class="note">coalitions, marginal contribution, exact + Monte-Carlo - Parts 1-3, Demos 1-3</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Shapley value paper (arXiv 1804.05327)</span><span class="note">the four axioms and the formula - Part 1</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">DP6 marketing-attribution-models (Python)</span><span class="note">Shapley on path data at scale - Demo 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">SHAP for trained conversion models</span><span class="note">bridged here; built with LightGBM in B6</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">GA4 data-driven attribution (Shapley + time-decay)</span><span class="note">the black-box production version - B7</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 5 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The idea</b><span>Channels = players in a cooperative game; conversions = payout. Each channel's credit = its average marginal contribution over every join order (Shapley, 1953).</span></div>
+      <div class="cheat-item"><b>The formula</b><span>φᵢ = Σ over S ⊆ N∖{i} of [ |S|!·(n−|S|−1)! / n! ] · ( v(S∪{i}) − v(S) ). The weight is just the count of orderings each subset represents.</span></div>
+      <div class="cheat-item"><b>v(S)</b><span>The characteristic function - conversion rate of a coalition. The one real modeling choice: observed-coalition rate vs a trained model's predicted probability.</span></div>
+      <div class="cheat-item"><b>Efficiency</b><span>Shapley values sum to v(grand coalition) by construction - no normalization needed, and a free correctness check every run.</span></div>
+      <div class="cheat-item"><b>The O(2ⁿ) wall</b><span>Exact sums over every subset - fine to ~10-15 channels, explodes beyond. Use Monte-Carlo Shapley (sample orderings) or restrict to observed coalitions.</span></div>
+      <div class="cheat-item"><b>SHAP bridge</b><span>Same math on a trained model's features → SHAP. The pragmatic production path: train a conversion model, explain it with shap. Leads into B6.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 5 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b4-markov-attribution.html">← Prev: Markov attribution</a> &nbsp;·&nbsp; <a href="b6-ml-dl-attribution.html">Next: ML and deep-learning attribution →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

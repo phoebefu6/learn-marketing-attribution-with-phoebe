@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 9 · Incrementality and geo-lift - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 9 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 9 of 10</div>
+    <h1>Incrementality and <span class="accent">geo-lift</span></h1>
+    <p class="sub">Every model in this course so far - heuristics, Markov, Shapley, GA4 DDA, even MMM - is correlational. It tells you which channels showed up alongside the sale, never which channels caused it. This session builds the only causal leg of measurement: turn a channel off in some geos, keep it on in others, and measure the revenue delta. You design a geo-lift test for Lumen paid social, estimate the lift with a synthetic control, and then close the loop - feeding the measured lift back into the MMM as a Bayesian prior so the whole stack finally rests on something causal.</p>
+    <div class="chip-row">
+      <span class="chip level" style="color:#DC2626">🔴 Hardest</span>
+      <span class="chip audience">Builders</span>
+      <span class="chip audience">experiments</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-4 · Why causal</span>
+      <span class="a2" style="flex:3">4-20 · Holdout + synthetic control</span>
+      <span class="a3" style="flex:5">20-40 · Test, estimate, calibrate</span>
+      <span class="a4" style="flex:1">40-45 · Wrap</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why causal is a different question</h2>
+    </div>
+    <p class="lede">"Which channels were present when people bought?" and "which channels <em>caused</em> people to buy?" are different questions, and eight sessions of models have only answered the first. Correlation is enough for daily tactics; it is not enough to bet a budget. <strong>Incrementality is the only causal leg</strong> - and it is causal for one boring, powerful reason: it runs an experiment. It withholds a channel from a comparable group and measures what changes. Everything else in this course is a story fitted to observed data; this is the ground truth those stories get checked against.</p>
+    <div class="legend">
+      <span class="pill solid">Live - built in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - run the code yourself</span>
+      <span class="pill inkpill">Data: Lumen touchpoints + geo</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A powered geo-lift test design for Lumen paid social, a synthetic-control estimate of the lift with a real counterfactual, and the code that turns that lift into a Bayesian prior for the MMM - the move that upgrades your whole measurement stack from correlational to calibrated.
+    </div>
+    <div class="callout tip">
+      <strong>The one line that ties the course together</strong>
+      MMM is correlational and <em>needs</em> incrementality experiments to be trusted. Lift-test results feed in as priors to recalibrate MMM elasticities. That sentence is this course's spine - today you build it.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE HOLDOUT IDEA ============ -->
+  <section class="section" id="holdout">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the experiment</span>
+      <h2>The holdout idea: on here, off there <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">The whole design fits on a napkin. Split your markets into two comparable groups. Keep the channel running in the <strong>test</strong> geos; turn it fully off in the <strong>control</strong> geos. Watch both groups over the test window. The <strong>delta</strong> between what the test group did and what the control group did is the incremental effect - the sales that would not have happened without the channel.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Geos split into test group with channel on and control group with channel off, the revenue delta is the lift">
+        <style>
+          .holT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .holS { font: 400 12px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .holN { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .holL { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+        </style>
+        <!-- test group -->
+        <rect x="14" y="50" width="360" height="120" rx="14" fill="#0F766E"/>
+        <text class="holT" x="34" y="82">TEST geos · channel ON</text>
+        <text class="holS" x="34" y="106">US-CA · US-NY · US-TX</text>
+        <text class="holS" x="34" y="128">paid social running full budget</text>
+        <text class="holS" x="34" y="152">observed revenue = $412k</text>
+        <!-- control group -->
+        <rect x="14" y="185" width="360" height="100" rx="14" fill="#0B4A45"/>
+        <text class="holT" x="34" y="215">CONTROL geos · channel OFF</text>
+        <text class="holS" x="34" y="239">US-WA · US-IL · US-GA (comparable)</text>
+        <text class="holS" x="34" y="263">observed revenue = $360k (scaled)</text>
+        <!-- delta callout -->
+        <rect x="440" y="95" width="410" height="120" rx="14" fill="#5EEAD4"/>
+        <text class="holN" x="462" y="128" style="font-size:15px">Lift = delta between the groups</text>
+        <text class="holN" x="462" y="158" style="font-size:22px; fill:#0B4A45">$412k − $360k = $52k</text>
+        <text class="holL" x="462" y="184" style="fill:#10201E">the incremental revenue paid social actually caused</text>
+        <text class="holL" x="462" y="202" style="fill:#10201E">- not sales that would have happened anyway</text>
+        <!-- arrow -->
+        <path d="M378,150 L436,150" stroke="#B9D6D0" stroke-width="2.5" fill="none" marker-end="url(#holAh)"/>
+        <defs>
+          <marker id="holAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <rect x="14" y="292" width="0" height="0"/>
+      </svg>
+      <figcaption>🔍 Click to zoom - test geos keep the channel on, control geos turn it off, the revenue delta is the causal lift</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Two flavours: geo holdout and platform RCT<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Same causal logic, two places to run it:</p>
+        <ul>
+          <li><strong>Geo holdout (geo-lift).</strong> You control the split - pick test and control markets, turn a channel off in the control geos, measure the delta. Works across any channel because <em>you</em> own the on/off switch. Meta GeoLift (R) is the reference tool, and it leans on synthetic control (Part 2).</li>
+          <li><strong>Platform conversion-lift RCT.</strong> The ad platform randomly holds out a fraction of users from seeing your ads (Meta Conversion Lift), then compares the holdout to the exposed group. Cleaner randomization, but scoped to one platform and you trust their measurement.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A brand ran a Meta Conversion Lift study and found its retargeting was 80% incremental-fraud - the "conversions" were people who would have bought anyway. Last-touch had credited retargeting with a 6x ROAS; the holdout said the true incremental ROAS was near 1.2x. No correlational model could have caught that. Only turning it off could.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Quasi-experiments when you cannot randomize<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>True randomization is not always possible - you cannot always cleanly turn a channel off, and geos are not identical. When randomization fails you fall back to <strong>quasi-experiments</strong>: designs that approximate a controlled test using observational structure. Synthetic control (Part 2) is the workhorse here - it builds a "fake" control group from a weighted blend of untreated geos when no single geo is a clean match. Difference-in-differences is its simpler cousin. These are weaker than a true RCT, but far stronger than any correlational attribution model.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: SYNTHETIC CONTROL ============ -->
+  <section class="section" id="synthetic-control">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the counterfactual</span>
+      <h2>Synthetic control: building the counterfactual <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">The hard part of any holdout is the counterfactual - what <em>would</em> the test geos have done if you had not run the channel? No single control geo matches perfectly. <strong>Synthetic control</strong> solves this: it builds a weighted blend of untreated "donor" geos that tracks the test group closely <em>before</em> the test starts, then projects that blend forward as the counterfactual. The gap between what actually happened and the synthetic line is the lift.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two lines, actual test revenue and synthetic control, matching before the test then diverging, the gap is the lift">
+        <style>
+          .scT { font: 700 14px Inter, sans-serif; fill: #10201E; }
+          .scL { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .scN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .scAx { stroke: #B9D6D0; stroke-width: 1.6; }
+          .scActual { stroke: #0F766E; stroke-width: 3.5; fill: none; }
+          .scSynth { stroke: #5B7671; stroke-width: 2.5; fill: none; stroke-dasharray: 6 5; }
+        </style>
+        <text class="scT" x="14" y="26">Actual test revenue vs synthetic control - the gap is the lift</text>
+        <line class="scAx" x1="70" y1="270" x2="830" y2="270"/>
+        <line class="scAx" x1="70" y1="55" x2="70" y2="270"/>
+        <text class="scL" x="30" y="66">revenue</text>
+        <!-- pre-period: lines together -->
+        <line class="scAx" x1="430" y1="55" x2="430" y2="278" stroke-dasharray="4 4"/>
+        <text class="scN" x="360" y="296" style="fill:#F97316">test starts</text>
+        <text class="scL" x="150" y="296">pre-period (fit the blend)</text>
+        <text class="scL" x="560" y="296">test window (measure gap)</text>
+        <!-- synthetic control line (dashed) - continues the pre-trend -->
+        <path class="scSynth" d="M80,210 L200,200 L320,192 L430,185 L560,178 L700,172 L820,168"/>
+        <!-- actual line - tracks in pre, lifts in test -->
+        <path class="scActual" d="M80,208 L200,201 L320,190 L430,184 L560,150 L700,120 L820,100"/>
+        <!-- gap shading -->
+        <path d="M430,184 L560,150 L700,120 L820,100 L820,168 L700,172 L560,178 Z" fill="#5EEAD4" opacity="0.25"/>
+        <text class="scN" x="620" y="150" style="fill:#0B4A45">lift</text>
+        <!-- legend -->
+        <rect x="90" y="70" width="26" height="10" rx="2" fill="#0F766E"/>
+        <text class="scL" x="122" y="79" style="fill:#10201E">actual test geos</text>
+        <rect x="250" y="70" width="26" height="4" rx="2" fill="#5B7671"/>
+        <text class="scL" x="282" y="79" style="fill:#10201E">synthetic control (counterfactual)</text>
+        <rect x="70" y="306" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="scL" x="92" y="317" style="fill:#10201E">Lines must track closely BEFORE the test - that pre-period fit is what makes the post-period gap credible.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - synthetic control tracks the test group pre-test, then the post-test gap between actual and synthetic is the lift</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>How the weighted blend is built<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The counterfactual is a convex combination of donor geos - weights that are non-negative and sum to one - chosen so the blend matches the test group's pre-test trajectory as closely as possible:</p>
+        <ul>
+          <li><strong>Donor pool:</strong> all the geos that never got the treatment. These are the raw material for the synthetic control.</li>
+          <li><strong>Fit on the pre-period:</strong> solve for weights that minimize the gap between the test group and the weighted donors <em>before</em> the test. A tight pre-period fit is the whole credibility of the method.</li>
+          <li><strong>Project forward:</strong> hold those weights fixed and carry the blend through the test window. That projected line is what the test geos "would have done" - the counterfactual.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The credibility test</strong>
+          Never trust a synthetic-control lift without seeing the pre-period fit. If actual and synthetic diverge <em>before</em> the treatment, the blend is wrong and the post-period gap is noise, not lift.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Spillover, and why the window is long<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Two threats to a clean geo test:</p>
+        <ul>
+          <li><strong>Spillover:</strong> if your control geos border test geos, or your audience travels, the "off" group is not really off. Pick geographically separated markets and check for contamination.</li>
+          <li><strong>Power and duration:</strong> a two-day test cannot detect a modest lift through the noise of daily revenue. You generally need <strong>14 to 30-plus days</strong> so the accumulated signal clears the variance - and because adstock means the channel's effect takes weeks to fully express (Session 8).</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: CLOSING THE LOOP ============ -->
+  <section class="section" id="closing-the-loop">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the payoff</span>
+      <h2>Closing the loop: lift tests calibrate MMM priors <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Here is why this session is not a detour. Your MMM from Session 8 estimated paid social's coefficient from correlation - it is a guess with a wide credible interval. A geo-lift test measures paid social's <em>causal</em> effect directly. In a Bayesian MMM you inject that measured lift as a <strong>prior</strong> on the coefficient, and the model tightens around the truth. The experiment does not replace the MMM - it calibrates it.</p>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why the loop beats either tool alone<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>MMM alone</strong> covers every channel and every week but is correlational - it can be fooled by a channel that merely rode along with demand.</li>
+          <li><strong>Lift tests alone</strong> are causal but expensive, slow, and scoped - you cannot run one on every channel every week.</li>
+          <li><strong>The loop:</strong> run a few well-chosen lift tests, feed each as a prior into the Bayesian MMM, and the causal anchors pull the correlational estimates into line. The MMM then extends that calibrated truth across channels you never tested.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>This is exactly how the big MMM vendors now work: Meridian and PyMC-Marketing both document experiment calibration as a first-class feature. A brand runs two or three geo-lift tests a year, uses them as priors, and the MMM's channel ROIs stop drifting on noise. The tests are the ground stakes; the MMM is the tent stretched between them.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Design a geo-lift test for Lumen paid social <span class="tag demo">★ 8 min · run it</span></h2>
+    </div>
+    <p class="lede">Before you touch a model, design the experiment: pick comparable geos, decide the split, and power the test so it can actually detect the lift you care about. A little Python turns "how long should we run this?" into a number.</p>
+    <div class="prompt-box good"><span class="label">Python · test design</span>import numpy as np
+import pandas as pd
+
+# Lumen revenue by geo x week (from the touchpoints + conversions tables)
+geo_wk = pd.read_csv("lumen_geo_weekly.csv", parse_dates=["week"])
+
+# 1. candidate geos, ranked by how stable their weekly revenue is
+stats = (geo_wk.groupby("geo")["revenue"]
+         .agg(mean="mean", std="std"))
+stats["cv"] = stats["std"] / stats["mean"]        # lower = more predictable
+donors = stats.sort_values("cv").index.tolist()
+
+# 2. split: hold out a few comparable markets as CONTROL (channel off)
+test_geos    = ["US-CA", "US-NY", "US-TX"]
+control_geos = ["US-WA", "US-IL", "US-GA"]
+
+# 3. power the test: weeks needed to detect a minimum lift we care about
+def weeks_for_power(baseline, weekly_std, mde=0.05, z=2.8):
+    """mde = minimum detectable lift (5%); z ~ 80% power at 95% conf."""
+    effect = baseline * mde
+    return int(np.ceil((z * weekly_std / effect) ** 2))
+
+base = geo_wk.loc[geo_wk.geo.isin(test_geos), "revenue"].mean()
+sd   = geo_wk.loc[geo_wk.geo.isin(test_geos), "revenue"].std()
+print(f"run for {weeks_for_power(base, sd)} weeks to detect a 5% lift")</div>
+    <div class="steps">
+      <div class="step"><p><strong>Pick stable markets.</strong> Rank geos by coefficient of variation - predictable revenue makes a cleaner counterfactual. Wild, spiky markets drown the signal.</p></div>
+      <div class="step"><p><strong>Comparable, separated split.</strong> Test and control groups should look alike historically but sit far enough apart that turning the channel off in control does not bleed into test (no spillover).</p></div>
+      <div class="step"><p><strong>Power it.</strong> The <code>weeks_for_power</code> read tells you the honest test length for the smallest lift worth acting on. If it says 6 weeks, a 1-week test is theatre - it cannot see the effect.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>Design before you spend</strong>
+      A geo test costs real revenue in the control markets you go dark in. Powering it first means you never run a test too short to conclude anything - the most common and most expensive incrementality mistake.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>Estimate lift with a synthetic control <span class="tag demo">★ 8 min · run it</span></h2>
+    </div>
+    <p class="lede">Build a weighted control from the donor geos that tracks the test group before the test, project it through the test window, and measure the gap. This is the core of Meta GeoLift, hand-rolled.</p>
+    <div class="prompt-box good"><span class="label">Python · synthetic control</span>from scipy.optimize import nnls
+
+# pivot to a weeks x geos revenue matrix
+mat = geo_wk.pivot_table(index="week", columns="geo",
+                         values="revenue", aggfunc="sum").sort_index()
+
+test_series = mat[test_geos].sum(axis=1)          # actual test-group revenue
+donor_cols  = [g for g in mat.columns if g not in test_geos]
+
+# split pre / post on the test start week
+start = "2026-05-04"
+pre  = mat.index &lt; start
+post = mat.index &gt;= start
+
+# 1. fit non-negative weights on the PRE-period only (convex-ish blend)
+w, _ = nnls(mat.loc[pre, donor_cols].values, test_series[pre].values)
+w = w / w.sum()                                   # normalise to sum to 1
+
+# 2. project the synthetic control across the whole timeline
+synthetic = mat[donor_cols].values @ w
+synthetic = pd.Series(synthetic, index=mat.index)
+
+# 3. lift = actual minus synthetic, summed over the test window
+lift = (test_series[post] - synthetic[post]).sum()
+pre_fit_err = np.abs(test_series[pre] - synthetic[pre]).mean()
+print(f"pre-period avg gap (should be small): ${pre_fit_err:,.0f}")
+print(f"measured lift over test window: ${lift:,.0f}")</div>
+    <div class="steps">
+      <div class="step"><p><strong>Fit on the past.</strong> <code>nnls</code> finds non-negative donor weights that reproduce the test group's pre-test revenue. Normalising to sum to 1 makes it a proper weighted blend.</p></div>
+      <div class="step"><p><strong>Check the pre-fit first.</strong> Print <code>pre_fit_err</code> before you believe the lift. A small pre-period gap means the counterfactual is credible; a big one means stop - the blend does not match and the lift is noise.</p></div>
+      <div class="step"><p><strong>Read the lift.</strong> The summed post-period gap is the incremental revenue paid social caused in the test geos - the causal number no correlational model could give you.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>Meta's GeoLift package does exactly this with more rigour - it searches for the best test/control assignment, adds placebo tests (re-run the method on untreated geos to check the "lift" is really zero there), and gives a confidence interval. Your hand-rolled version is the honest core of it; the production tool is this plus guardrails.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>Feed the measured lift back as an MMM prior <span class="tag demo">★ 7 min · run it</span></h2>
+    </div>
+    <p class="lede">Close the loop. Convert the measured lift into an expected coefficient for paid social, then set it as a prior in a Bayesian MMM so the model is anchored to a causal result instead of pure correlation.</p>
+    <div class="prompt-box good"><span class="label">Python · calibrate the prior</span># 1. turn the geo-lift result into an implied causal coefficient
+#    lift revenue per unit of (adstocked, saturated) paid-social spend
+test_spend = geo_wk.loc[geo_wk.geo.isin(test_geos)
+                        &amp; (geo_wk.week &gt;= start), "paid_social_spend"].sum()
+implied_coef = lift / test_spend
+print(f"geo-lift implies paid_social coef ~ {implied_coef:.3f}")
+
+# 2. set it as an informative prior in a Bayesian MMM (PyMC-Marketing style)
+import pymc as pm
+
+with pm.Model() as mmm:
+    # BEFORE: a vague prior - the MMM guesses from correlation alone
+    # AFTER : centre the prior on the experiment, with modest uncertainty
+    beta_social = pm.TruncatedNormal("beta_paid_social",
+                                     mu=implied_coef, sigma=0.05,
+                                     lower=0)
+    # ... other channel coefs, adstock, saturation, likelihood ...
+    # the causal prior pulls the fitted coefficient toward the tested truth
+
+print("MMM now calibrated: correlation tempered by a causal experiment")</div>
+    <div class="steps">
+      <div class="step"><p><strong>Lift to coefficient.</strong> Divide the measured incremental revenue by the spend that produced it to get an implied causal coefficient for paid social - the number the experiment actually measured.</p></div>
+      <div class="step"><p><strong>Prior, not fact.</strong> You do not hard-code it. You centre a prior on it with a sensible <code>sigma</code>, so the MMM blends the experiment with the rest of the data rather than ignoring either.</p></div>
+      <div class="step"><p><strong>The loop is closed.</strong> The MMM's paid-social estimate is now anchored to a causal test. Run a few of these across your biggest channels and the whole model stops drifting on correlation. That is the calibrated stack Session 10 assembles.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>Why this only works Bayesian</strong>
+      A ridge or OLS MMM has nowhere to put the experiment - you can only fit the data. A Bayesian MMM has a prior slot built for exactly this outside knowledge. That is the real reason the field went Bayesian (Session 8): so the causal loop has somewhere to plug in.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 10</span>
+      <h2>This week <span class="tag exercise">◐ 45 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Re-power the test.</strong> Re-run Build-along 1 for a 3% and a 10% minimum detectable lift. Feel how a smaller effect you want to catch demands a much longer test.</li>
+      <li><strong>Run a placebo.</strong> Re-run the synthetic control (Build-along 2) pretending an <em>untreated</em> geo was the test group. The measured "lift" should be near zero - if it is not, your donor pool or window is off.</li>
+      <li><strong>Vary the prior strength.</strong> In Build-along 3, set <code>sigma</code> to 0.02 (trust the experiment hard) and 0.20 (trust it loosely). Watch how much the calibrated coefficient moves - this is the correlation-vs-causal dial.</li>
+      <li><strong>Optional:</strong> read Meta's GeoLift documentation and map each hand-rolled step above to its production equivalent (assignment search, placebo tests, confidence intervals).</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Among MTA, Markov, Shapley, MMM and incrementality, which is the only <em>causal</em> method?</p>
+      <button class="qopt" type="button">A · MMM, because it uses years of data</button>
+      <button class="qopt" type="button">B · Shapley, because it is game-theoretic</button>
+      <button class="qopt" type="button">C · Incrementality - it runs an experiment (turn the channel off) and measures the delta</button>
+      <p class="qwhy">MTA, Markov, Shapley and MMM are all correlational - they describe what showed up alongside the sale. Only incrementality withholds a channel and measures what actually changes, which is why it is the sole causal leg.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · What does a synthetic control give you in a geo-lift test?</p>
+      <button class="qopt" type="button">A · A weighted blend of untreated geos that estimates what the test group would have done without the channel</button>
+      <button class="qopt" type="button">B · A random sample of users who never saw the ad</button>
+      <button class="qopt" type="button">C · The average of all channels' contributions</button>
+      <p class="qwhy">Synthetic control builds the counterfactual - a weighted combination of donor geos fitted to match the test group before the test, then projected forward. The gap between actual and synthetic is the lift. The pre-period fit is what makes it credible.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · How does an incrementality test improve an MMM?</p>
+      <button class="qopt" type="button">A · It replaces the MMM entirely</button>
+      <button class="qopt" type="button">B · The measured lift is fed in as a Bayesian prior that calibrates the channel's coefficient</button>
+      <button class="qopt" type="button">C · It converts the MMM to last-touch attribution</button>
+      <p class="qwhy">The loop: a lift test measures a channel's causal effect, and that result becomes a prior on the MMM's coefficient. The correlational model gets anchored to a causal truth - which is why the field went Bayesian, so there is a slot for the experiment.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session distills incrementality practice - holdout design, synthetic control, and MMM calibration - into a build-it-yourself pass on Lumen's geo data. Vendor tooling and full statistical treatments stay with their official sources.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Meta Blueprint - Conversion Lift path</span><span class="note">holdout / RCT logic, incremental ROAS - Part 1</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Meta GeoLift (R)</span><span class="note">synthetic control, geo test design - Parts 1-2, Build-alongs 1-2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Google Meridian / PyMC-Marketing - experiment calibration</span><span class="note">lift as MMM prior - Part 3, Build-along 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Synthetic-control theory (Abadie)</span><span class="note">named here; placebo tests in homework</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">The full unified stack</span><span class="note">assembled in Builder Session 10</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 9 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Incrementality =</b><span>The only causal leg. MTA, Markov, Shapley, MMM are all correlational. Run an experiment: turn the channel off, measure the delta.</span></div>
+      <div class="cheat-item"><b>Holdout design</b><span>Channel ON in test geos, OFF in comparable control geos. Lift = revenue delta - sales that would not have happened otherwise.</span></div>
+      <div class="cheat-item"><b>Synthetic control</b><span>Weighted blend of untreated donor geos, fitted to the test group's pre-period, projected forward as the counterfactual. Gap = lift.</span></div>
+      <div class="cheat-item"><b>Pre-fit is credibility</b><span>Actual and synthetic must track BEFORE the test. Run a placebo on an untreated geo - the "lift" there should be ~0.</span></div>
+      <div class="cheat-item"><b>Power the test</b><span>14-30+ days to clear the noise. Watch spillover between neighbouring geos. Design before you go dark - it costs real revenue.</span></div>
+      <div class="cheat-item"><b>Close the loop</b><span>Feed measured lift into the MMM as a Bayesian prior. Causal test calibrates correlational model. This is the course's spine.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 9 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b8-mmm-adstock-saturation.html">← Prev: MMM: adstock and saturation</a> &nbsp;·&nbsp; <a href="b10-unified-stack-2026.html">Next: The unified 2026 stack →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

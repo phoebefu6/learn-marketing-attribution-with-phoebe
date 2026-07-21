@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 4 · Markov attribution from scratch - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 4 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 4 of 10</div>
+    <h1>Markov attribution, <span class="accent">built from scratch</span></h1>
+    <p class="sub">The heuristics guessed. Now we learn credit from the data. We model every Lumen journey as a Markov chain, build the transition matrix from real path counts, and score each channel by its removal effect - how far conversion falls when we take that channel away. You will code it in numpy, watch it reconcile to a hand-verified example, then call the industrial-strength library once you trust the math.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Builders · practitioner</span>
+      <span class="chip audience">Python + numpy</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Setup</span>
+      <span class="a2" style="flex:3">3-18 · The model</span>
+      <span class="a3" style="flex:5">18-40 · Build it</span>
+      <span class="a4" style="flex:1">40-45 · Recap</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where we are: from fixed rules to learned credit</h2>
+    </div>
+    <p class="lede">In B2 you coded the six heuristics, and in B3 you watched them fail - they assert a rule (last touch wins, recent wins) instead of asking the data what actually moved the needle. This session is the leap. Markov attribution treats every customer journey as a walk through a chain of states and scores each channel by a question no heuristic can answer: <strong>if this channel vanished, how much conversion would we lose?</strong> That is the removal effect, and it is the first genuinely data-driven credit you will build by hand.</p>
+    <div class="legend">
+      <span class="pill solid">Live - built together in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - everyone runs it</span>
+      <span class="pill inkpill">The data: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A working from-scratch Markov attributor in ~40 lines of numpy - transition matrix, absorbing-chain solve, removal effect per channel, normalized to spendable credit - plus the one-line ChannelAttribution call you will actually use once your journey count runs to the millions.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: JOURNEYS AS A MARKOV CHAIN ============ -->
+  <section class="section" id="markov-chain">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the model</span>
+      <h2>Journeys as a first-order Markov chain <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">A Markov chain is a set of <strong>states</strong> and the <strong>probabilities</strong> of hopping between them, where the next hop depends only on where you are now - not how you got there. For attribution the states are: a synthetic <em>Start</em>, one state per channel, an absorbing <em>Conversion</em>, and an absorbing <em>Null</em> (the journey ended without buying). We estimate every transition probability by counting observed hops in Lumen's path data. That is the whole model.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A first-order Markov chain: Start transitions to channels A and B, which transition to an absorbing Conversion state or an absorbing Null state, with probabilities on each arrow">
+        <style>
+          .mk1T { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .mk1D { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity: .9; }
+          .mk1P { font: 700 12px Inter, sans-serif; fill: #0F766E; }
+          .mk1X { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .mk1N { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .mk1A { stroke: #B9D6D0; stroke-width: 2.2; fill: none; marker-end: url(#mk1ah); }
+        </style>
+        <defs>
+          <marker id="mk1ah" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- Start -->
+        <rect x="18" y="150" width="120" height="56" rx="11" fill="#0B4A45"/>
+        <text class="mk1T" x="38" y="175">▶ Start</text>
+        <text class="mk1D" x="38" y="193">4 journeys</text>
+        <!-- Channel A -->
+        <rect x="300" y="60" width="150" height="56" rx="11" fill="#0F766E"/>
+        <text class="mk1T" x="318" y="85">A · Paid social</text>
+        <text class="mk1D" x="318" y="103">a channel state</text>
+        <!-- Channel B -->
+        <rect x="300" y="244" width="150" height="56" rx="11" fill="#0F766E"/>
+        <text class="mk1T" x="318" y="269">B · Email</text>
+        <text class="mk1D" x="318" y="287">a channel state</text>
+        <!-- Conversion (absorbing) -->
+        <rect x="640" y="60" width="170" height="56" rx="11" fill="#14B8A6"/>
+        <text class="mk1T" x="658" y="85">🛒 Conversion</text>
+        <text class="mk1D" x="658" y="103">absorbing · pays out</text>
+        <!-- Null (absorbing) -->
+        <rect x="640" y="244" width="170" height="56" rx="11" fill="#5EEAD4"/>
+        <text class="mk1T" x="658" y="285" style="fill:#10201E">⛔ Null</text>
+        <text class="mk1D" x="658" y="285" style="fill:#10201E;opacity:.75;transform:translateY(-18px)">absorbing · no sale</text>
+        <!-- Start -> A -->
+        <line class="mk1A" x1="138" y1="168" x2="298" y2="98"/>
+        <text class="mk1P" x="182" y="118">0.75</text>
+        <!-- Start -> B -->
+        <line class="mk1A" x1="138" y1="190" x2="298" y2="262"/>
+        <text class="mk1P" x="182" y="250">0.25</text>
+        <!-- A -> B -->
+        <line class="mk1A" x1="375" y1="116" x2="375" y2="242"/>
+        <text class="mk1P" x="326" y="185">0.50</text>
+        <!-- A -> Conv -->
+        <line class="mk1A" x1="450" y1="86" x2="638" y2="86"/>
+        <text class="mk1P" x="520" y="76">0.25</text>
+        <!-- A -> Null -->
+        <line class="mk1A" x1="450" y1="104" x2="638" y2="262"/>
+        <text class="mk1P" x="520" y="205">0.25</text>
+        <!-- B -> Conv -->
+        <line class="mk1A" x1="450" y1="262" x2="638" y2="104"/>
+        <text class="mk1P" x="560" y="200">0.667</text>
+        <!-- B -> A -->
+        <line class="mk1A" x1="395" y1="242" x2="395" y2="118"/>
+        <text class="mk1P" x="402" y="185" style="fill:#F97316">0.333</text>
+        <rect x="18" y="326" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="mk1N" x="40" y="337">First-order = "memoryless": the next hop depends only on the current state, never on the earlier path. Rows out of each state sum to 1.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - a two-channel Lumen slice as a Markov chain (A = paid social, B = email), every arrow a counted transition probability</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The states, and where the probabilities come from<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>We will teach the whole method on a tiny, hand-checkable slice of Lumen so you can verify every number, then scale it up in the demos. The slice has just two channels and four observed journeys:</p>
+        <table class="clean">
+          <thead><tr><th>Observed path</th><th>Count</th><th>Outcome</th></tr></thead>
+          <tbody>
+            <tr><td>Start → A → B</td><td>2</td><td>Conversion</td></tr>
+            <tr><td>Start → B → A</td><td>1</td><td>Conversion</td></tr>
+            <tr><td>Start → A</td><td>1</td><td>Null (no sale)</td></tr>
+          </tbody>
+        </table>
+        <p>Four journeys start; three convert. So the base conversion probability is <strong>3 / 4 = 0.75</strong>. Now read the transitions straight off the counts:</p>
+        <ul>
+          <li><strong>From Start:</strong> A is entered 3 times (2 + 1), B once. So Start→A = 0.75, Start→B = 0.25.</li>
+          <li><strong>From A:</strong> A appears 4 times total - it goes to B twice, to Conversion once, to Null once. So A→B = 0.50, A→Conv = 0.25, A→Null = 0.25.</li>
+          <li><strong>From B:</strong> B appears 3 times - to Conversion twice, to A once. So B→Conv = 0.667, B→A = 0.333.</li>
+        </ul>
+        <p>Every row sums to 1, because probabilities out of a state have to go somewhere. That is your transition matrix, estimated purely by counting.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why the sequence matters, not just the frequency<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The heuristics only ever saw <em>which</em> channels appeared and <em>where</em> in a single path. Markov sees the <strong>full graph of how channels hand off to each other</strong> across every journey at once. A channel that always appears right before conversion, and a channel that appears early but reliably passes people onward to a closer, get scored differently - because the chain captures the sequence of transitions, not just a tally of touches.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>On Lumen's real data, display and CTV rarely take the last click, so last-touch scores them near zero. But the Markov chain shows that removing them collapses the transitions that <em>feed</em> paid search - the closers dry up because nobody arrives to close. Sequence-awareness is exactly what surfaces those upstream engines.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE REMOVAL EFFECT ============ -->
+  <section class="section" id="removal-effect">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the scoring rule</span>
+      <h2>The removal effect, worked by hand <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Here is the idea that makes Markov attribution learned rather than asserted. To score a channel, we <strong>remove it</strong> - route every one of its transitions to Null, as if that channel never existed - recompute the probability of conversion from Start, and measure the fractional drop. A channel whose removal barely dents conversion earned little; a channel whose removal collapses conversion earned a lot.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before and after removing channel A: conversion probability drops from 0.75 to 0.167, a removal effect of 0.778">
+        <style>
+          .mk2T { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .mk2H { font: 700 13px Inter, sans-serif; fill: #10201E; }
+          .mk2B { font: 800 30px Inter, sans-serif; fill: #FFFFFF; }
+          .mk2X { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .mk2N { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .mk2A { stroke: #F97316; stroke-width: 3; fill: none; marker-end: url(#mk2ah); }
+        </style>
+        <defs>
+          <marker id="mk2ah" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6" fill="none" stroke="#F97316" stroke-width="1.8"/>
+          </marker>
+        </defs>
+        <!-- before panel -->
+        <text class="mk2H" x="60" y="40">A present · the real chain</text>
+        <rect x="60" y="56" width="250" height="120" rx="14" fill="#14B8A6"/>
+        <text class="mk2T" x="82" y="90">P(conversion | Start)</text>
+        <text class="mk2B" x="82" y="140">0.75</text>
+        <!-- after panel -->
+        <text class="mk2H" x="570" y="40">A removed · routed to Null</text>
+        <rect x="570" y="56" width="250" height="120" rx="14" fill="#0B4A45"/>
+        <text class="mk2T" x="592" y="90">P(conversion | Start)</text>
+        <text class="mk2B" x="592" y="140">0.167</text>
+        <!-- arrow -->
+        <line class="mk2A" x1="320" y1="116" x2="562" y2="116"/>
+        <text class="mk2X" x="378" y="106">remove channel A</text>
+        <text class="mk2X" x="378" y="140">conversion collapses</text>
+        <!-- RE callout -->
+        <rect x="230" y="212" width="420" height="70" rx="14" fill="#F97316"/>
+        <text class="mk2T" x="252" y="242" style="fill:#431407">Removal effect of A</text>
+        <text class="mk2B" x="252" y="272" style="fill:#431407;font-size:22px">RE(A) = 1 − 0.167 / 0.75 = 0.778</text>
+        <rect x="60" y="300" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="mk2N" x="82" y="311">Removing A wipes out 78% of Lumen's conversion probability - it is doing far more work than any last-touch tally would ever show.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the removal effect: take A away, watch conversion fall from 0.75 to 0.167, measure the fractional drop</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Solve the absorbing chain, remove each channel<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>To get P(conversion | Start) we solve the chain. Let f(X) be the probability of eventually reaching Conversion starting from state X, with f(Conv) = 1 and f(Null) = 0. Then each channel state is a weighted average of where it hops:</p>
+        <ul>
+          <li>f(A) = 0.50·f(B) + 0.25·1 + 0.25·0</li>
+          <li>f(B) = 0.667·1 + 0.333·f(A)</li>
+        </ul>
+        <p>Substitute the second into the first and solve: <strong>f(A) = 0.70, f(B) = 0.90</strong>. Then f(Start) = 0.75·f(A) + 0.25·f(B) = 0.75·0.70 + 0.25·0.90 = <strong>0.75</strong> - which reconciles exactly with the base rate we counted. Good sign: the chain agrees with reality.</p>
+        <p>Now remove each channel (send all its visits to Null) and re-solve:</p>
+        <ul>
+          <li><strong>Remove A:</strong> f(A) = 0, so f(B) = 0.667, and f(Start) = 0.25·0.667 = 0.167. RE(A) = 1 − 0.167/0.75 = <strong>0.778</strong>.</li>
+          <li><strong>Remove B:</strong> f(B) = 0, so f(A) = 0.25, and f(Start) = 0.75·0.25 = 0.1875. RE(B) = 1 − 0.1875/0.75 = <strong>0.75</strong>.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The formula, once</strong>
+          RE(c) = 1 − P(conversion | channel c removed) / P(conversion). It is the fractional loss in conversion probability when the channel disappears. Nothing here was asserted - every number fell out of the counted data.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: WHY NORMALIZE + HIGHER ORDER ============ -->
+  <section class="section" id="normalize">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the gotcha</span>
+      <h2>Why you MUST normalize, and higher-order chains <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Look at the two removal effects: RE(A) = 0.778 and RE(B) = 0.75. They sum to <strong>1.528</strong>, not 1. This is not a bug - it is the single most misunderstood point in Markov attribution, and getting it wrong will make your credit numbers meaningless.</p>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Removal effects overlap - that is why they don't sum to 1<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Journeys <strong>share channels</strong>. When you remove A, some of the conversions you lose were paths that also used B - and when you remove B, you lose some of those same shared paths again. The effects overlap, so the raw removal effects double-count and overshoot 1. To turn them into a credit split that actually sums to 100% of conversions, you normalize each channel by the total:</p>
+        <ul>
+          <li>credit(A) = RE(A) / ΣRE = 0.778 / 1.528 = <strong>50.9%</strong></li>
+          <li>credit(B) = RE(B) / ΣRE = 0.75 / 1.528 = <strong>49.1%</strong></li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A team once reported "our channels have 320% removal effect" as if the model were broken. It was not - nine channels sharing long journeys will happily overlap to a raw sum well above 1. They just skipped the normalization step. Normalize, and 320% becomes a clean 100% credit split you can multiply against revenue.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>First-order vs higher-order (k-order) Markov<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>We built a <strong>first-order</strong> chain: the next hop depends only on the current channel. That is the memoryless default and it is remarkably robust. But it cannot tell "email after paid social" apart from "email after display" - both collapse to "in email". A <strong>higher-order</strong> (k-order) chain fixes that by making each state the last k channels, so it remembers short sequences.</p>
+        <ul>
+          <li><strong>The cost:</strong> the state space explodes. Order-2 over 9 channels is up to 81 states; order-3 is up to 729 - and each needs enough observed paths to estimate its transitions, or the counts get too sparse to trust.</li>
+          <li><strong>The tool:</strong> the ChannelAttribution package exposes <code>order=1,2,3,...</code> so you can raise it and watch whether credit shifts enough to justify the extra data hunger. Usually order 1 is plenty; go higher only when short sequences are clearly load-bearing.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Build the transition matrix from Lumen paths <span class="tag demo">★ 8 min · everyone</span></h2>
+    </div>
+    <p class="lede">Straight from the counting logic in Part 1. We take the sessionized Lumen paths (the journey table you built in B1), count every hop, and normalize each row into probabilities. Same code runs on our 4-path toy slice and on Lumen's millions of paths.</p>
+    <div class="prompt-box good">
+      <span class="label">Demo 1 · count then normalize</span>
+      <button class="copy-btn" type="button">Copy</button>import numpy as np
+
+# Lumen journeys, sessionized into channel paths (from B1).
+# Each path is (list of channels, "conv" or "null"). Toy slice here;
+# the real Lumen frame has ~9 channels and millions of rows.
+paths = [
+    (["paid_social", "email"], "conv"),  # observed x2
+    (["paid_social", "email"], "conv"),
+    (["email", "paid_social"], "conv"),  # observed x1
+    (["paid_social"], "null"),           # observed x1
+]
+
+states = ["start", "paid_social", "email", "conv", "null"]
+idx = {s: i for i, s in enumerate(states)}
+counts = np.zeros((len(states), len(states)))
+
+for channels, outcome in paths:
+    seq = ["start"] + channels + [outcome]
+    for a, b in zip(seq[:-1], seq[1:]):
+        counts[idx[a], idx[b]] += 1        # tally every hop
+
+row_sums = counts.sum(axis=1, keepdims=True)
+row_sums[row_sums == 0] = 1                 # avoid divide-by-zero
+T = counts / row_sums                       # rows now sum to 1
+T[idx["conv"], idx["conv"]] = 1.0           # conversion absorbs
+T[idx["null"], idx["null"]] = 1.0           # null absorbs
+
+print(np.round(T[idx["start"]], 3))         # [0. 0.75 0.25 0. 0.] </div>
+    <div class="callout tip">
+      <strong>Sanity check as you go</strong>
+      Print any transient row and confirm it sums to 1. Start prints [0, 0.75, 0.25, 0, 0] - exactly the Start→A = 0.75, Start→B = 0.25 we counted by hand. If a row does not sum to 1, your path parsing dropped or duplicated a hop.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>Conversion probability via the absorbing chain <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">Now we solve for P(conversion | Start) the clean linear-algebra way. Split the matrix into transient states (Start and the channels) and absorbing states (Conv, Null). The fundamental matrix N = (I − Q)⁻¹ gives expected visits; N·R gives the probability of ending in each absorbing state.</p>
+    <div class="prompt-box good">
+      <span class="label">Demo 2 · absorbing-chain solve</span>
+      <button class="copy-btn" type="button">Copy</button>transient = ["start", "paid_social", "email"]
+absorbing = ["conv", "null"]
+ti = [idx[s] for s in transient]
+ai = [idx[s] for s in absorbing]
+
+Q = T[np.ix_(ti, ti)]      # transient -> transient
+R = T[np.ix_(ti, ai)]      # transient -> absorbing
+
+# Fundamental matrix N = (I - Q)^-1 ; B = N @ R = absorption probabilities
+N = np.linalg.inv(np.eye(len(ti)) - Q)
+B = N @ R
+
+p_conv = B[transient.index("start"), absorbing.index("conv")]
+print(round(p_conv, 3))    # 0.75  -> reconciles with the base rate </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>The linear solve reconciling to the observed 0.75 base rate is your green light. On real Lumen data you would confirm the model's implied conversion probability lands within a hair of the actual conversion rate before trusting any channel score - if it drifts, your paths, your absorbing states, or your Start handling are off.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>Removal effect per channel + the library one-liner <span class="tag demo">★ 8 min · everyone</span></h2>
+    </div>
+    <p class="lede">The payoff. Wrap the solve in a function that can route a chosen channel to Null, loop over the channels, compute each removal effect, then normalize into spendable credit. Finally, the same result from ChannelAttribution once your data outgrows a from-scratch loop.</p>
+    <div class="prompt-box good">
+      <span class="label">Demo 3a · from-scratch removal effect</span>
+      <button class="copy-btn" type="button">Copy</button>def conversion_prob(T, states, removed=None):
+    """P(conv | start), optionally routing a removed channel to null."""
+    T = T.copy()
+    if removed is not None:
+        r = states.index(removed)
+        T[r, :] = 0.0
+        T[r, states.index("null")] = 1.0       # send every visit to null
+    ti = [states.index(s) for s in states if s not in ("conv", "null")]
+    ai = [states.index("conv"), states.index("null")]
+    Q, R = T[np.ix_(ti, ti)], T[np.ix_(ti, ai)]
+    N = np.linalg.inv(np.eye(len(ti)) - Q)
+    return (N @ R)[ti.index(states.index("start")), 0]
+
+base = conversion_prob(T, states)
+channels = ["paid_social", "email"]            # the real 9 for Lumen
+removal = {c: 1 - conversion_prob(T, states, removed=c) / base
+           for c in channels}
+
+total = sum(removal.values())                  # ~1.528 here - NOT 1
+credit = {c: re / total for c, re in removal.items()}   # MUST normalize
+
+print({k: round(v, 3) for k, v in removal.items()})
+# {'paid_social': 0.778, 'email': 0.75}
+print({k: round(v, 3) for k, v in credit.items()})
+# {'paid_social': 0.509, 'email': 0.491} </div>
+    <div class="prompt-box good">
+      <span class="label">Demo 3b · the same thing at real scale</span>
+      <button class="copy-btn" type="button">Copy</button># Once you trust the math, stop hand-rolling it. ChannelAttribution has a
+# C++ core and scales to thousands of channels and millions of paths.
+from ChannelAttribution import markov_model
+
+# df has one row per journey: a "path" string + conversion / null counts
+result = markov_model(
+    df,
+    var_path="path",          # e.g. "paid_social > email > paid_search"
+    var_conv="conversions",
+    var_null="nulls",
+    order=1,                   # first-order (memoryless); try 2 or 3 later
+)
+print(result)                 # channel + normalized removal-effect credit </div>
+    <div class="callout tip">
+      <strong>Build it once, then buy the scale</strong>
+      The from-scratch loop is how you <em>understand</em> Markov attribution and how you audit any vendor's number. ChannelAttribution (R and an official Python port) is the de-facto standard for production; DP6's marketing-attribution-models bundles heuristics, Markov and Shapley in one Python library if you want them side by side.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 5</span>
+      <h2>This week <span class="tag exercise">◐ 40 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Run the toy slice end to end</strong> and confirm you reproduce credit paid_social 50.9% / email 49.1%. If your normalization is off, you will see the raw 0.778 / 0.75 instead - which do not sum to 1.</li>
+      <li><strong>Scale to all 9 Lumen channels</strong> using the full sessionized path table from B1. Print the raw removal effects (watch them sum well above 1) and the normalized credit (sums to 1).</li>
+      <li><strong>Cross-check against ChannelAttribution</strong> with order=1 and confirm your from-scratch numbers match the library within rounding.</li>
+      <li><strong>Optional:</strong> bump the library to order=2 and note which channels gain or lose credit - then ask whether your path volume is really enough to trust the bigger state space.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · The removal effect of a channel is defined as...</p>
+      <button class="qopt" type="button">A · The number of conversions where that channel took the last touch</button>
+      <button class="qopt" type="button">B · The share of touches that belong to that channel</button>
+      <button class="qopt" type="button">C · 1 − P(conversion with the channel removed) / P(conversion) - the fractional drop when it is routed to Null</button>
+      <p class="qwhy">You remove the channel by sending all its transitions to Null, recompute conversion probability from Start, and measure how far it falls relative to the base. That fractional drop is the removal effect.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">2 · Your channels' removal effects sum to 1.53, not 1. What do you do?</p>
+      <button class="qopt" type="button">A · Nothing is wrong to fix - report the raw removal effects as credit</button>
+      <button class="qopt" type="button">B · Normalize: divide each removal effect by the total, because journeys share channels so the effects overlap and overshoot 1</button>
+      <button class="qopt" type="button">C · Rebuild the matrix - a sum above 1 means the transitions are broken</button>
+      <p class="qwhy">Shared channels mean removal effects overlap and double-count, so their raw sum runs above 1. That is expected. Divide each by the total to get a credit split that sums to 100%.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · What does a Markov chain capture that the heuristics cannot?</p>
+      <button class="qopt" type="button">A · The sequence of how channels hand off to each other across all journeys, not just a per-path tally of touches</button>
+      <button class="qopt" type="button">B · The exact dollar value of each impression</button>
+      <button class="qopt" type="button">C · Whether a customer will return next year</button>
+      <p class="qwhy">Heuristics score one path with a fixed rule. Markov learns the whole graph of channel-to-channel transitions across every journey, so it credits channels that feed the closers, not just the closers themselves.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session owns Coverage Gap #1: the actual math of Markov attribution built from scratch in Python. No existing course walks the transition matrix, absorbing-chain solve and removal-effect normalization end to end - most hand you a library call and move on.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Coverage Gap #1 - Markov from scratch (original)</span><span class="note">transition matrix, removal effect, normalization - Parts 1-3, Demos 1-3</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">ChannelAttribution (R + official Python port)</span><span class="note">the production one-liner - Demo 3b</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Udemy - Advanced Attribution using R</span><span class="note">Markov removal-effect method - Part 2</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Higher-order (k-order) Markov internals</span><span class="note">concept here; deeper state-space math left to the docs</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Shapley value attribution</span><span class="note">the other data-driven credit model - next session, B5</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 4 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The model</b><span>Journeys as a first-order Markov chain: states = Start + channels + Conversion + Null (both absorbing). Transitions counted from paths.</span></div>
+      <div class="cheat-item"><b>Removal effect</b><span>RE(c) = 1 − P(conv | c removed) / P(conv). Route the channel to Null, re-solve, measure the fractional drop in conversion.</span></div>
+      <div class="cheat-item"><b>Solve the chain</b><span>Split into transient Q and absorbing R. N = (I − Q)⁻¹; N·R gives absorption probabilities. P(conv|Start) should reconcile to the base rate.</span></div>
+      <div class="cheat-item"><b>MUST normalize</b><span>Removal effects overlap (shared channels) so they don't sum to 1. credit(c) = RE(c) / ΣRE. Never report raw removal effects as credit.</span></div>
+      <div class="cheat-item"><b>Order</b><span>First-order = memoryless default, robust. Higher-order (k) remembers short sequences but the state space explodes and needs far more data.</span></div>
+      <div class="cheat-item"><b>Tools</b><span>ChannelAttribution (C++ core, scales to thousands of channels) is the standard. DP6 marketing-attribution-models bundles heuristics + Markov + Shapley.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 4 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b3-why-heuristics-fail.html">← Prev: Why heuristics fail</a> &nbsp;·&nbsp; <a href="b5-shapley-attribution.html">Next: Shapley attribution →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

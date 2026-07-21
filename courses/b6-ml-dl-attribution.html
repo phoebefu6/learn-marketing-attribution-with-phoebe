@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 6 · ML and deep-learning attribution - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 6 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 6 of 10</div>
+    <h1>ML and deep-learning attribution: <span class="accent">let a model split the credit</span></h1>
+    <p class="sub">You built Shapley from scratch last session. Now you let a trained model do the heavy lifting: fit a gradient-boosted classifier that predicts whether a journey converts, then read per-channel credit off it with SHAP - which is the same Shapley math you already coded, applied to the model's features. Then we look up the ladder at the deep sequence models everyone name-drops (LSTM + attention, DNAMTA, DeepMTA) and get honest about when they earn their keep and when they just overfit your sparse conversions.</p>
+    <div class="chip-row">
+      <span class="chip level" style="background:#FFF3EC;color:#F97316">🟠 Advanced</span>
+      <span class="chip audience">Builders · DS / ML engineers</span>
+      <span class="chip audience">LightGBM + SHAP</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-4 · The ML ladder</span>
+      <span class="a2" style="flex:4">4-20 · GBM + SHAP</span>
+      <span class="a3" style="flex:4">20-33 · Deep sequence models</span>
+      <span class="a4" style="flex:3">33-45 · Build + tradeoff</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The ML ladder for attribution</h2>
+    </div>
+    <p class="lede">There is a ladder of sophistication for data-driven attribution, and most teams climb one rung too high. Rung one is heuristics (B2). Rung two is a learned credit method - Markov (B4), exact Shapley (B5). Rung three is the one this session lives on: train a machine-learning model to predict conversion, then attribute credit by asking how much each channel-feature moved that prediction. Rung four is deep sequence models. The trap is thinking a taller ladder is always a better ladder. It is not. The right rung is the one your data volume can hold your weight on.</p>
+    <div class="legend">
+      <span class="pill solid">Live - coded in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - everyone runs it</span>
+      <span class="pill inkpill">The data: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you ship today</strong>
+      A LightGBM conversion model trained on Lumen's featurized journeys, a SHAP-derived channel attribution you can defend line by line, and a clear-eyed rule for when to reach past gradient boosting for an LSTM - and when reaching for it would quietly overfit you into a worse answer.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: GBM + SHAP ============ -->
+  <section class="section" id="gbm-shap">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the production path</span>
+      <h2>Gradient boosting + SHAP: the pragmatic default <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Here is the workflow that quietly runs in most serious attribution stacks. You do not model the sequence at all - you featurize each journey (which channels touched it, how often), train a tree ensemble to predict conversion, and then read credit with SHAP. The important thing to internalize: <strong>SHAP is not a different idea from Session 5. SHAP is Shapley.</strong> It computes each feature's average marginal contribution to a specific prediction - the exact same coalition math you coded by hand - but over a trained model's features instead of over channel presence directly. That is what makes it production-friendly: the model handles interactions and non-linearity, and SHAP hands you back interpretable per-channel credit.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pipeline: Lumen journeys featurized into a matrix, fed to a LightGBM conversion model, read out as per-channel credit by SHAP">
+        <style>
+          .gsT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .gsD { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .gsX { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .gsN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .gsA { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#gsAh); }
+        </style>
+        <defs>
+          <marker id="gsAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <rect x="14" y="46" width="185" height="66" rx="12" fill="#0B4A45"/>
+        <text class="gsT" x="30" y="74">Journeys</text>
+        <text class="gsD" x="30" y="93">raw touchpoints</text>
+        <text class="gsD" x="30" y="108">per customer</text>
+        <rect x="224" y="46" width="185" height="66" rx="12" fill="#0F766E"/>
+        <text class="gsT" x="240" y="74">Feature matrix</text>
+        <text class="gsD" x="240" y="93">channel counts +</text>
+        <text class="gsD" x="240" y="108">presence flags</text>
+        <rect x="434" y="46" width="185" height="66" rx="12" fill="#14B8A6"/>
+        <text class="gsT" x="450" y="74">LightGBM</text>
+        <text class="gsD" x="450" y="93">predict P(convert)</text>
+        <text class="gsD" x="450" y="108">trees + boosting</text>
+        <rect x="644" y="46" width="185" height="66" rx="12" fill="#2A9D8F"/>
+        <text class="gsT" x="660" y="74">SHAP credit</text>
+        <text class="gsD" x="660" y="93">per-channel share</text>
+        <text class="gsD" x="660" y="108">of the prediction</text>
+        <line class="gsA" x1="199" y1="79" x2="222" y2="79"/>
+        <line class="gsA" x1="409" y1="79" x2="432" y2="79"/>
+        <line class="gsA" x1="619" y1="79" x2="642" y2="79"/>
+        <rect x="14" y="150" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="gsN" x="36" y="161">SHAP = the Shapley math from B5, applied to the trained model's features. Same axioms, same "average marginal contribution".</text>
+        <text class="gsX" x="14" y="192">The model absorbs interactions and non-linearity for you; SHAP translates its logic back into credit a marketer can read.</text>
+        <text class="gsX" x="14" y="214">No sequence modelling here - order is dropped. That is the tradeoff you accept for robustness on modest data.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the production path: featurize, boost, then read credit with SHAP (Shapley on the model)</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why gradient boosting is the right default<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Tree ensembles - LightGBM, XGBoost - are the workhorse of applied attribution for reasons that have nothing to do with fashion:</p>
+        <ul>
+          <li><strong>They handle interactions natively.</strong> "Paid social only converts when email also touched" is exactly the kind of split a boosted tree finds without you engineering the interaction term. That is the synergy Shapley cares about, learned for free.</li>
+          <li><strong>They tolerate modest, messy, tabular data.</strong> Thousands of journeys is plenty. No sequence padding, no embedding layers, no GPU.</li>
+          <li><strong>SHAP closes the interpretability gap.</strong> The classic objection to ML attribution is "it's a black box". SHAP answers it: every prediction decomposes into additive per-feature contributions that sum back to the model output. You can defend each channel's number.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A retail team replaced their linear-attribution report with LightGBM + SHAP and found paid social's credit nearly doubled - not because they changed the rule by hand, but because the model saw that social touches consistently preceded the conversions that email later closed. The heuristic could never see that; the tree split on it in the first few rounds.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Mean absolute SHAP as a channel weight<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>SHAP gives you a contribution value for every feature on every row. To turn that into a single channel-level attribution, you take the <strong>mean of the absolute SHAP values per channel</strong> across all journeys, then normalize to 100%. Absolute, because a channel that reliably pushes the prediction (up or down) is an informative channel - you want its total influence, not its net sign. Normalizing lets you compare directly against your Markov and Shapley numbers from B4 and B5 on the same Lumen data.</p>
+        <table class="clean">
+          <thead><tr><th>Step</th><th>What it produces</th></tr></thead>
+          <tbody>
+            <tr><td>Train LightGBM on featurized journeys</td><td>A conversion probability model</td></tr>
+            <tr><td>TreeExplainer over the eval set</td><td>Per-row, per-channel SHAP contributions</td></tr>
+            <tr><td>Mean absolute SHAP per channel</td><td>Each channel's total influence</td></tr>
+            <tr><td>Normalize to sum 100%</td><td>A comparable attribution split</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: DEEP SEQUENCE MODELS ============ -->
+  <section class="section" id="deep-sequence">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · up the ladder</span>
+      <h2>Deep sequence models: LSTM + attention <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Gradient boosting throws away order. Deep sequence models keep it - and that is their whole pitch. Two papers define the space you will hear cited. <strong>DNAMTA</strong> (Deep Neural net with Attention for MTA) runs an LSTM over the touchpoint sequence and adds an attention mechanism whose weights become the per-touch credit; it also folds in user-context control variables - demographics and behaviour - to reduce the estimation bias of the media effects. <strong>DeepMTA</strong> uses a Phased-LSTM for conversion prediction (an extra time gate that copes with the irregular gaps between touches) and then an additive feature-attribution layer built on Shapley values for interpretability. Notice the pattern: deep model for prediction, Shapley for credit - the same division of labour as Part 1, just with a fancier predictor.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A touchpoint sequence feeding an LSTM, with attention weights above each touch becoming per-touch credit">
+        <style>
+          .sqT { font: 700 12.5px Inter, sans-serif; fill: #FFFFFF; }
+          .sqW { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .sqL { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .sqB { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .sqN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .sqA { stroke: #B9D6D0; stroke-width: 2.2; fill: none; marker-end: url(#sqAh); }
+        </style>
+        <defs>
+          <marker id="sqAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- attention weight bars (learned credit) -->
+        <text class="sqL" x="14" y="26">Attention weight = learned per-touch credit</text>
+        <rect x="60" y="40" width="120" height="16" rx="4" fill="#5EEAD4"/>
+        <text class="sqW" x="108" y="53">0.08</text>
+        <rect x="222" y="40" width="120" height="16" rx="4" fill="#5EEAD4"/>
+        <text class="sqW" x="270" y="53">0.31</text>
+        <rect x="384" y="40" width="120" height="16" rx="4" fill="#5EEAD4"/>
+        <text class="sqW" x="432" y="53">0.19</text>
+        <rect x="546" y="40" width="120" height="16" rx="4" fill="#5EEAD4"/>
+        <text class="sqW" x="594" y="53">0.14</text>
+        <rect x="708" y="40" width="120" height="16" rx="4" fill="#5EEAD4"/>
+        <text class="sqW" x="756" y="53">0.28</text>
+        <!-- token row -->
+        <rect x="60" y="72" width="120" height="46" rx="10" fill="#0B4A45"/>
+        <text class="sqT" x="76" y="100">Display</text>
+        <rect x="222" y="72" width="120" height="46" rx="10" fill="#0F766E"/>
+        <text class="sqT" x="238" y="100">P.social</text>
+        <rect x="384" y="72" width="120" height="46" rx="10" fill="#0F766E"/>
+        <text class="sqT" x="400" y="100">Email</text>
+        <rect x="546" y="72" width="120" height="46" rx="10" fill="#14B8A6"/>
+        <text class="sqT" x="562" y="100">Organic</text>
+        <rect x="708" y="72" width="120" height="46" rx="10" fill="#14B8A6"/>
+        <text class="sqT" x="724" y="100">P.search</text>
+        <!-- down arrows into LSTM lane -->
+        <line class="sqA" x1="120" y1="118" x2="120" y2="140"/>
+        <line class="sqA" x1="282" y1="118" x2="282" y2="140"/>
+        <line class="sqA" x1="444" y1="118" x2="444" y2="140"/>
+        <line class="sqA" x1="606" y1="118" x2="606" y2="140"/>
+        <line class="sqA" x1="768" y1="118" x2="768" y2="140"/>
+        <!-- LSTM lane -->
+        <rect x="60" y="146" width="768" height="42" rx="10" fill="#2A9D8F"/>
+        <text class="sqB" x="76" y="172">LSTM sequence memory - carries long-range dependency left to right →</text>
+        <!-- context vars -->
+        <rect x="60" y="204" width="360" height="34" rx="9" fill="#0B4A45"/>
+        <text class="sqT" x="76" y="226">+ user-context vars (reduce media-effect bias)</text>
+        <line class="sqA" x1="444" y1="188" x2="444" y2="248"/>
+        <rect x="470" y="204" width="358" height="34" rx="9" fill="#F97316"/>
+        <text class="sqT" x="486" y="226" style="fill:#FFFFFF">→ P(convert) + per-touch credit</text>
+        <!-- note -->
+        <rect x="60" y="258" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="sqN" x="82" y="269">DNAMTA: LSTM + attention weights as credit. DeepMTA: Phased-LSTM (time gate) + a Shapley attribution layer.</text>
+        <text class="sqL" x="60" y="290">The LSTM captures order and long gaps that gradient boosting cannot - if, and only if, you have the conversion volume to train it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - an LSTM reads the touch sequence; attention weights above each touch are the credit it assigns</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What attention actually buys you<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Attention is the part worth understanding, because it is where the credit comes from. An attention layer learns a weight for every touch in the sequence - how much the model should "look at" that touch when predicting the outcome. Those weights are interpretable by construction: a high attention weight on the paid-social touch means the model leaned on it to make the call. So the attribution falls straight out of the model instead of being bolted on afterward.</p>
+        <ul>
+          <li><strong>DNAMTA</strong> adds control variables (user demographics, prior behaviour) so the media effect is not confounded by "this was always a high-intent user anyway" - a genuine bias reduction, not just accuracy chasing.</li>
+          <li><strong>DeepMTA</strong>'s Phased-LSTM adds a learnable time gate, so a touch three days ago and a touch three minutes ago are handled differently - the irregular spacing of real journeys becomes a signal instead of noise.</li>
+          <li><strong>Both</strong> lean on Shapley or attention for the credit read-out. The interpretability problem never went away; it just got a better predictor in front of it.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>CAMTA and the causal wrinkle<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>CAMTA</strong> is a causal attention variant that adds propensity-style de-biasing on top of the attention mechanism - an attempt to move the credit from "correlates with conversion" toward "caused conversion". It is the same instinct we chase properly with incrementality in B9. Keep it filed under "interesting, and still not a randomized experiment": no observational sequence model, however causal its framing, replaces a real holdout. It sharpens the correlational story; it does not turn it into proof.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: WHEN DL IS WORTH IT ============ -->
+  <section class="section" id="when-worth-it">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the honest tradeoff</span>
+      <h2>When deep learning is worth it - and when it overfits <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">This is the part the papers under-sell and production teams learn the hard way. LSTMs are hungry. They need volume - tens of thousands of labelled conversions, not thousands - to learn sequence structure without memorizing noise. Most brands, Lumen included, do not have that. Overfitting a deep model on sparse conversion data is one of the top pitfalls in this whole field: the validation curve looks fine, the attribution looks precise, and it is precisely wrong, because the model fit patterns that will not repeat. The default is gradient boosting + SHAP. You reach for deep sequence models only when scale genuinely warrants it.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A decision line from small data toward large data: gradient boosting plus SHAP first, deep sequence models only at high conversion volume">
+        <style>
+          .dtT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .dtD { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .dtX { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .dtN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+        </style>
+        <line x1="30" y1="150" x2="850" y2="150" stroke="#B9D6D0" stroke-width="3"/>
+        <text class="dtX" x="30" y="176">few conversions</text>
+        <text class="dtX" x="742" y="176">high volume + scale</text>
+        <rect x="30" y="44" width="300" height="78" rx="12" fill="#0F766E"/>
+        <text class="dtT" x="48" y="72">Default: LightGBM + SHAP</text>
+        <text class="dtD" x="48" y="93">robust on modest data, interactions</text>
+        <text class="dtD" x="48" y="110">for free, defensible credit</text>
+        <rect x="550" y="44" width="300" height="78" rx="12" fill="#14B8A6"/>
+        <text class="dtT" x="568" y="72">At scale: LSTM + attention</text>
+        <text class="dtD" x="568" y="93">order + long gaps modelled,</text>
+        <text class="dtD" x="568" y="110">DNAMTA / DeepMTA territory</text>
+        <rect x="360" y="60" width="160" height="46" rx="10" fill="#F97316"/>
+        <text class="dtT" x="376" y="82" style="fill:#FFFFFF">danger zone:</text>
+        <text class="dtD" x="376" y="99" style="fill:#FFFFFF">deep model, sparse data</text>
+        <circle cx="80" cy="150" r="6" fill="#0F766E"/>
+        <circle cx="800" cy="150" r="6" fill="#14B8A6"/>
+        <text class="dtN" x="300" y="204">Match the model to the data you have, not the model on the conference slide.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - climb the ladder only as far as your conversion volume can hold you</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>A rule of thumb you can defend<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>When someone proposes an LSTM for attribution, ask three questions before you write any Keras:</p>
+        <table class="clean">
+          <thead><tr><th>Question</th><th>If the answer is "no"</th></tr></thead>
+          <tbody>
+            <tr><td>Do we have tens of thousands of conversions?</td><td>Stay on LightGBM + SHAP.</td></tr>
+            <tr><td>Does touch <em>order</em> plausibly change the outcome here?</td><td>A bag-of-channels model loses nothing - stay on trees.</td></tr>
+            <tr><td>Can we hold out a validation window and watch for overfit?</td><td>Do not deploy a deep model you cannot audit.</td></tr>
+          </tbody>
+        </table>
+        <div class="callout tip">
+          <strong>The builder's discipline</strong>
+          Precision is not accuracy. A deep model that reports crisp per-touch credit on 3,000 conversions is giving you confident nonsense. The most senior move in the room is often "we don't have the data for that yet" - and then shipping the boosted model that actually generalizes.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Featurize Lumen journeys + train LightGBM <span class="tag demo">★ 12 min · everyone</span></h2>
+    </div>
+    <p class="lede">We collapse Lumen's touchpoint log into one row per journey - a channel-count matrix - and train a gradient-boosted classifier to predict whether that journey converted. Trees do not need the sequence; they need the features.</p>
+    <div class="prompt-box good">
+      <span class="label">Python · train the conversion model</span>
+import pandas as pd
+import lightgbm as lgb
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
+
+# one row per customer: how many times each of the 9 channels touched them
+tp = pd.read_sql("SELECT customer_id, channel FROM touchpoints", con)
+X = (tp.assign(n=1)
+       .pivot_table(index="customer_id", columns="channel",
+                    values="n", aggfunc="sum", fill_value=0))
+
+conv = pd.read_sql("SELECT DISTINCT customer_id FROM conversions", con)
+y = X.index.to_series().isin(conv["customer_id"]).astype(int)
+
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.25, stratify=y, random_state=42)
+
+model = lgb.LGBMClassifier(
+    n_estimators=400, learning_rate=0.05,
+    num_leaves=31, subsample=0.8, random_state=42)
+model.fit(X_tr, y_tr)
+
+proba = model.predict_proba(X_te)[:, 1]
+print("val AUC:", round(roc_auc_score(y_te, proba), 3))   # ~0.79 on Lumen
+    </div>
+    <div class="steps">
+      <div class="step"><p><strong>Featurize, do not sequence.</strong> The pivot gives one feature per channel - the count of touches. That is deliberately a bag-of-channels view; order is dropped and the tree still finds the interactions that matter.</p></div>
+      <div class="step"><p><strong>Stratify the split.</strong> Conversions are the minority class. <code>stratify=y</code> keeps the same conversion rate in train and test so your AUC is honest.</p></div>
+      <div class="step"><p><strong>Read AUC, not accuracy.</strong> With imbalanced conversions, accuracy is a liar - a model predicting "never converts" scores high. ROC AUC asks whether converters get higher scores than non-converters, which is what you actually care about.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>Adding two cheap features to the count matrix - total touch count and journey length in days - usually lifts AUC a few points and gives SHAP something richer to attribute. Resist the urge to add fifty features on a few thousand conversions, though; that is the same overfitting trap as the LSTM, just wearing a tree costume.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>SHAP values → channel attribution <span class="tag demo">★ 11 min · everyone</span></h2>
+    </div>
+    <p class="lede">Now the payoff: turn the trained model into a channel attribution. We run <code>TreeExplainer</code>, take the mean absolute SHAP value per channel, and normalize - a credit split you can lay next to your Markov and Shapley numbers from B4 and B5.</p>
+    <div class="prompt-box good">
+      <span class="label">Python · SHAP as attribution</span>
+import shap
+import numpy as np
+
+# SHAP = Shapley values (B5) computed over the trained model's features
+explainer = shap.TreeExplainer(model)
+sv = explainer.shap_values(X_te)          # per-row, per-channel contributions
+
+# a channel's total influence = mean of its absolute SHAP across journeys
+mean_abs = np.abs(sv).mean(axis=0)
+credit = pd.Series(mean_abs, index=X.columns)
+credit = (credit / credit.sum() * 100).round(1)   # normalize to 100%
+
+print(credit.sort_values(ascending=False))
+# paid_social    27.9
+# email          21.4
+# paid_search    18.6
+# display        12.1
+# organic_search  9.8
+# influencer      6.0   ...
+    </div>
+    <div class="steps">
+      <div class="step"><p><strong>TreeExplainer is exact and fast for trees.</strong> It computes Shapley values analytically over the ensemble - no Monte-Carlo sampling like the general case in B5. Same axioms, far cheaper.</p></div>
+      <div class="step"><p><strong>Absolute, then mean, then normalize.</strong> Absolute value captures total influence regardless of direction; the mean aggregates across journeys; normalizing makes it a comparable 100% split.</p></div>
+      <div class="step"><p><strong>Compare, do not just admire.</strong> Put this next to your B4 Markov split and B5 exact-Shapley split on the same Lumen data. Where they agree, you gain confidence. Where they diverge, you have found something worth investigating - usually a channel with strong interactions.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>One SHAP gotcha to remember</strong>
+      For a binary LightGBM model, some SHAP versions return contributions for the positive class directly and others return a two-element list. Always check the shape of what you got back before you take the mean - a silent axis mix-up will hand you a confident, wrong attribution.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>Read the tradeoff: GBM+SHAP vs an LSTM at Lumen's size <span class="tag demo">★ 8 min · everyone</span></h2>
+    </div>
+    <p class="lede">Before anyone proposes a deep model, we count. Lumen's conversion volume decides the honest answer - and this tiny check is the most valuable code in the session.</p>
+    <div class="prompt-box good">
+      <span class="label">Python · does the data justify a deep model?</span>
+n_conversions = int(y.sum())
+n_journeys = len(y)
+print(f"Lumen: {n_conversions:,} conversions across {n_journeys:,} journeys")
+
+# rough field heuristic: LSTMs need tens of thousands of positives
+THRESHOLD = 50_000
+
+if n_conversions &lt; THRESHOLD:
+    print("-&gt; stay on LightGBM + SHAP (a deep LSTM will overfit here)")
+else:
+    print("-&gt; a DNAMTA-style LSTM + attention may now earn its keep")
+
+# Lumen prints ~9,400 conversions -&gt; well under threshold -&gt; trees win
+    </div>
+    <div class="steps">
+      <div class="step"><p><strong>Lumen has roughly 9,400 conversions.</strong> That is a healthy tabular dataset and a starvation diet for an LSTM. The check returns "stay on trees" - and it is right.</p></div>
+      <div class="step"><p><strong>The threshold is a guide, not a law.</strong> Order-sensitivity, sequence length, and how much your context features help all move the line. But being an order of magnitude under it, as Lumen is, settles the question.</p></div>
+      <div class="step"><p><strong>Write the recommendation down.</strong> "LightGBM + SHAP is our production attribution model; revisit deep sequence models if monthly conversions pass ~50k." That one sentence saves a quarter of GPU-shaped disappointment.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>A team ran the LSTM anyway because it demoed beautifully in a notebook. In production its per-touch credit swung wildly week to week - classic overfit variance on sparse conversions - while the boosted model's SHAP attribution stayed stable. They quietly rolled back to trees and kept the LSTM as a slide. Ship the model that generalizes.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Builder Session 7</span>
+      <h2>This week <span class="tag exercise">◐ 45 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Add two features and re-measure.</strong> Append total touch count and journey length in days to the matrix, retrain LightGBM, and note the change in AUC and in the SHAP attribution. Which channels moved?</li>
+      <li><strong>Line up three methods.</strong> Put your B4 Markov, B5 exact-Shapley, and today's SHAP attribution side by side on Lumen. Write two sentences on where they agree and where they diverge, and why.</li>
+      <li><strong>Skim one paper.</strong> Read the abstract and figures of DNAMTA (arxiv 1809.02230) or DeepMTA (2004.00384). Find the sentence where they describe how credit is read out - it is attention or Shapley every time.</li>
+      <li><strong>Optional:</strong> compute the SHAP-based attribution for only <em>new</em> customers vs returning, and see whether the channel credit shifts. That segmentation is a preview of the reconciliation work in B7.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · What is SHAP, in one line?</p>
+      <button class="qopt" type="button">A · A deep-learning framework that replaces gradient boosting</button>
+      <button class="qopt" type="button">B · A heuristic that assigns 40% credit to the first and last touch</button>
+      <button class="qopt" type="button">C · Shapley values computed over a trained model's features - the B5 math, applied to a model</button>
+      <p class="qwhy">SHAP is not a new idea. It is the same average-marginal-contribution Shapley math you coded by hand, read off a trained model's features - which is what makes it the production interpretability layer.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">2 · How does DNAMTA produce per-touch credit?</p>
+      <button class="qopt" type="button">A · It splits credit equally across every touch in the path</button>
+      <button class="qopt" type="button">B · An LSTM reads the touch sequence and an attention mechanism's weights become the per-touch credit</button>
+      <button class="qopt" type="button">C · It gives 100% of the credit to the last click</button>
+      <p class="qwhy">DNAMTA runs an LSTM over the sequence and uses attention weights as the credit, plus user-context control variables to reduce media-effect bias. DeepMTA does the deep-prediction-then-Shapley variant.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · You have ~9,000 conversions and want per-touch attribution. Best move?</p>
+      <button class="qopt" type="button">A · LightGBM + SHAP - deep sequence models overfit on sparse conversions, so GBM+SHAP is the default</button>
+      <button class="qopt" type="button">B · Train a deep LSTM with attention because it is the most sophisticated option</button>
+      <button class="qopt" type="button">C · Use last-touch because ML is overkill</button>
+      <p class="qwhy">LSTMs need tens of thousands of conversions or they memorize noise and report confident, unstable credit. At Lumen's scale, gradient boosting + SHAP is both the safe and the correct default.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session bridges applied ML interpretability and the deep-MTA literature into a builder-first workflow: the production GBM + SHAP path, and an honest read of the deep sequence models. Papers stay with their authors; we teach the method and the judgement.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">LightGBM + SHAP for tabular attribution</span><span class="note">the production path - Part 1, Build-alongs 1-2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">DNAMTA - Deep Neural net with Attention for MTA (arxiv 1809.02230)</span><span class="note">LSTM + attention as per-touch credit - Part 2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">DeepMTA - Phased-LSTM + Shapley attribution (arxiv 2004.00384)</span><span class="note">deep prediction, Shapley read-out - Part 2</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">CAMTA - causal attention variant</span><span class="note">de-biasing idea, named in self-study - Part 2</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">True causal lift (holdout / geo experiments)</span><span class="note">the real answer to confounding - Builder Session 9</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 6 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Production path</b><span>Featurize journeys → LightGBM predicts conversion → SHAP reads per-channel credit. Robust, defensible, no GPU.</span></div>
+      <div class="cheat-item"><b>SHAP = Shapley</b><span>The same B5 math, applied to a trained model's features. Mean absolute SHAP per channel, normalized to 100%.</span></div>
+      <div class="cheat-item"><b>DNAMTA</b><span>LSTM over the touch sequence + attention weights as per-touch credit; user-context vars reduce media-effect bias.</span></div>
+      <div class="cheat-item"><b>DeepMTA</b><span>Phased-LSTM (time gate for irregular gaps) predicts, then an additive Shapley layer gives interpretable credit.</span></div>
+      <div class="cheat-item"><b>The overfit trap</b><span>LSTMs need tens of thousands of conversions. On sparse data they report confident, unstable credit. Default to GBM+SHAP.</span></div>
+      <div class="cheat-item"><b>Match model to data</b><span>Climb the ladder only as far as your conversion volume holds. Lumen (~9.4k) → trees. Reach for LSTM only at scale.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 6 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b5-shapley-attribution.html">← Prev: Shapley attribution</a> &nbsp;·&nbsp; <a href="b7-ga4-dda-reconciliation.html">Next: GA4 DDA and reconciliation →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

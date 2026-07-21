@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 2 · Heuristics in SQL and Python - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 2 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 2 of 10</div>
+    <h1>Heuristics in code: <span class="accent">six models, one table</span></h1>
+    <p class="sub">Leaders learned that six heuristic rules give six different answers. Now you implement all six on Lumen - in SQL and pandas - and reconcile them on the exact $92 journey down to the cent. Linear is one division. Time-decay is one exponential. Position-based is three constants. None of them touch a training set. By the end you output one tidy table where the same journey shows six columns of credit, and you understand every number in it.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Foundational</span>
+      <span class="chip audience">Builders</span>
+      <span class="chip audience">SQL + pandas</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-20 · The six rules in code</span>
+      <span class="a3" style="flex:4">20-42 · Reconcile + aggregate</span>
+      <span class="a4" style="flex:1">42-45 · Wrap</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Heuristics are just arithmetic on the path table</h2>
+    </div>
+    <p class="lede">You built <code>lumen_fct_touchpoints</code> in Session 1 - ordered, numbered, path-string ready. Every heuristic in this session is a small function over that table. The point of coding all six is not that any one is hard; it is that you will <em>feel</em>, in the output, how much the answer swings purely on the rule. That felt swing is the motivation for the data-driven leap in Session 3. First, master the rules you assert.</p>
+    <div class="legend">
+      <span class="pill solid">Live - built in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - everyone codes it</span>
+      <span class="pill inkpill">The data: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A single pandas function per heuristic - first-touch, last-touch, linear, time-decay, position-based, last-non-direct - plus one reconciliation table that shows all six splitting Lumen's $92 journey, matching the canon to the cent (linear $18.40 each, U-shaped $36.80 on the ends). Then the same models rolled up to channel-level credit across every Lumen journey.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: SINGLE + LINEAR ============ -->
+  <section class="section" id="single-linear">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the easy three</span>
+      <h2>Single-touch and linear in pandas <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">First-touch, last-touch, and linear need no weighting logic at all. First and last are a single-row pick; linear is one division. We load Lumen's journeys into a dataframe and write each as a function that returns a credit-per-touch series.</p>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Load the journeys, then split them<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Read the fact table you built in B1, join order values, and you have a tidy per-touch dataframe. Every heuristic below returns a <code>credit</code> column that sums to <code>order_value</code> within each journey.</p>
+        <div class="prompt-box good">
+          <span class="label">heuristics.py · load + single-touch + linear</span>
+<pre>import pandas as pd
+
+# One row per touch: customer_id, position_in_path, channel,
+# event_ts, order_value (order_value repeated per journey)
+tp = pd.read_parquet("lumen_fct_touchpoints.parquet")
+
+def first_touch(g):
+    c = g.sort_values("event_ts").copy()
+    c["credit"] = 0.0
+    c.iloc[0, c.columns.get_loc("credit")] = c["order_value"].iloc[0]
+    return c
+
+def last_touch(g):
+    c = g.sort_values("event_ts").copy()
+    c["credit"] = 0.0
+    c.iloc[-1, c.columns.get_loc("credit")] = c["order_value"].iloc[0]
+    return c
+
+def linear(g):
+    c = g.sort_values("event_ts").copy()
+    c["credit"] = c["order_value"].iloc[0] / len(c)   # value / n_touches
+    return c
+
+# On Lumen's $92, 5-touch journey:
+# first_touch -> display $92 · last_touch -> paid_search $92
+# linear      -> $18.40 to each of the 5 touches</pre>
+        </div>
+        <div class="callout tip">
+          <strong>Credit always sums to the order value</strong>
+          Every heuristic must conserve the dollar: within one journey the <code>credit</code> column sums to <code>order_value</code>. If it does not, you have a bug. Linear makes this obvious - <code>$18.40 &times; 5 = $92</code> - and it is the invariant to assert in a test for every model.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: TIME-DECAY ============ -->
+  <section class="section" id="time-decay">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the exponential one</span>
+      <h2>Time-decay: the half-life weight <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Time-decay says a touch closer to the conversion earned more. The weight is a classic exponential decay keyed to a <strong>half-life</strong> - Lumen uses 7 days, so a touch 7 days before the sale gets half the weight of one at the moment of purchase. Compute raw weights, then normalize so they still sum to the order value.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Exponential time-decay weights rising across the five Lumen touches from display to paid search">
+        <style>
+          .tdT { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .tdV { font: 700 11px Inter, sans-serif; fill: #FFFFFF; }
+          .tdX { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+          .tdN { font: 600 11px Inter, sans-serif; fill: #10201E; }
+        </style>
+        <!-- baseline -->
+        <line x1="60" y1="180" x2="840" y2="180" stroke="#B9D6D0" stroke-width="2"/>
+        <!-- 5 ascending bars: display, paid_social, email, organic, paid_search -->
+        <!-- heights scaled to canon credit ~ 6/13/19/25/29 -->
+        <rect x="90"  y="150" width="110" height="30"  rx="4" fill="#0B4A45"/>
+        <text class="tdV" x="112" y="170">~$6</text>
+        <rect x="240" y="115" width="110" height="65"  rx="4" fill="#0F766E"/>
+        <text class="tdV" x="256" y="152">~$13</text>
+        <rect x="390" y="85"  width="110" height="95"  rx="4" fill="#2A9D8F"/>
+        <text class="tdV" x="410" y="122">~$19</text>
+        <rect x="540" y="55"  width="110" height="125" rx="4" fill="#14B8A6"/>
+        <text class="tdV" x="558" y="95" style="fill:#10201E">~$25</text>
+        <rect x="690" y="35"  width="110" height="145" rx="4" fill="#5EEAD4"/>
+        <text class="tdN" x="708" y="80">~$29</text>
+        <!-- x labels -->
+        <text class="tdX" x="98"  y="198">display</text>
+        <text class="tdX" x="244" y="198">p.social</text>
+        <text class="tdX" x="402" y="198">email</text>
+        <text class="tdX" x="548" y="198">organic</text>
+        <text class="tdX" x="690" y="198">p.search</text>
+        <text class="tdX" x="90"  y="216">day -14</text>
+        <text class="tdX" x="244" y="216">day -7</text>
+        <text class="tdX" x="402" y="216">day -3</text>
+        <text class="tdX" x="548" y="216">day -1</text>
+        <text class="tdX" x="700" y="216">day 0</text>
+        <!-- note -->
+        <rect x="60" y="234" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="tdN" x="82" y="245">weight = 2 ** (-days_before_conversion / 7). Normalize the 5 weights, multiply by $92 -> the credits above, summing to $92.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - time-decay weights climb toward the conversion (7-day half-life on Lumen's $92 journey)</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The decay formula, in code<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The half-life form <code>2 ** (-days / half_life)</code> is the intuitive one: every <code>half_life</code> days, the weight halves. Compute per touch, normalize across the journey, scale by the order value.</p>
+        <div class="prompt-box good">
+          <span class="label">heuristics.py · time-decay (7-day half-life)</span>
+<pre>import numpy as np
+
+def time_decay(g, half_life=7.0):
+    c = g.sort_values("event_ts").copy()
+    conv_ts = c["event_ts"].max()                       # the conversion moment
+    days_before = (conv_ts - c["event_ts"]).dt.total_seconds() / 86400
+    w = np.power(2.0, -days_before / half_life)          # half every 7 days
+    c["credit"] = c["order_value"].iloc[0] * w / w.sum() # normalize to $
+    return c
+
+# Lumen $92 journey, half_life=7:
+# display ~$6 · paid_social ~$13 · email ~$19 · organic ~$25 · paid_search ~$29
+# (sums to $92)</pre>
+        </div>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>The half-life is a lever, not a law. Set it to 1 day and time-decay collapses toward last-touch; set it to 90 days and it flattens toward linear. Teams that "use time-decay" without stating the half-life are hiding the most important knob in the model - always report it, the way you always report the lookback window.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: POSITION + LAST-NON-DIRECT ============ -->
+  <section class="section" id="position-lnd">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the shape and the filter</span>
+      <h2>Position-based and last-non-direct <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Position-based (U-shaped) tells a story: the touch that <em>started</em> the journey and the touch that <em>closed</em> it matter most. Lumen uses 40% to first, 40% to last, and the remaining 20% split evenly across the middle. Last-non-direct is a tiny variant of last-touch that skips self-navigation.</p>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>U-shaped credit and the direct filter<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <div class="prompt-box good">
+          <span class="label">heuristics.py · position-based + last-non-direct</span>
+<pre>def position_based(g, first=0.4, last=0.4):
+    c = g.sort_values("event_ts").copy()
+    n, ov = len(c), c["order_value"].iloc[0]
+    w = np.zeros(n)
+    if n == 1:
+        w[0] = 1.0
+    else:
+        w[0] = first
+        w[-1] = last
+        middle = (1.0 - first - last) / (n - 2) if n &gt; 2 else 0.0
+        if n &gt; 2:
+            w[1:-1] = middle
+    c["credit"] = ov * w
+    return c
+
+def last_non_direct(g):
+    c = g.sort_values("event_ts").copy()
+    non_direct = c[c["channel"] != "direct"]
+    winner = (non_direct if len(non_direct) else c).index[-1]
+    c["credit"] = 0.0
+    c.loc[winner, "credit"] = c["order_value"].iloc[0]
+    return c
+
+# Lumen $92, 5 touches, position_based:
+# display $36.80 · paid_search $36.80 · middle 3 (p.social/email/organic)
+#   split $18.40 -> ~$6.13 each
+# last_non_direct: paid_search $92 (no 'direct' in this path, so = last-touch)</pre>
+        </div>
+        <div class="callout tip">
+          <strong>Why last-non-direct exists</strong>
+          "Direct" often is not a real channel - it is a customer typing your URL because an earlier ad already did the work, or a lost UTM. Crediting direct rewards your own missing tracking. Skipping it hands credit to the last <em>marketing</em> touch, which is usually what you actually meant. On Lumen's canonical path there is no direct touch, so it equals last-touch - but on real data it quietly reshuffles a lot of credit.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Run all six heuristics, one table out <span class="tag demo">★ 8 min · everyone</span></h2>
+    </div>
+    <p class="lede">Wire the six functions into a registry and apply each per journey. The output is a long dataframe: every touch, its channel, and six credit columns.</p>
+    <div class="steps">
+      <div class="step"><p>Register the models by name so you can loop over them:</p>
+        <div class="prompt-box good">
+          <span class="label">demo1_run_all.py</span>
+<pre>MODELS = {
+    "first_touch":     first_touch,
+    "last_touch":      last_touch,
+    "linear":          linear,
+    "time_decay":      time_decay,
+    "position_based":  position_based,
+    "last_non_direct": last_non_direct,
+}
+
+def run_all(df):
+    out = df.copy()
+    for name, fn in MODELS.items():
+        credited = (df.groupby("customer_id", group_keys=False)
+                      .apply(fn)[["credit"]]
+                      .rename(columns={"credit": name}))
+        out = out.join(credited)
+    return out
+
+per_touch = run_all(tp)   # every touch now has 6 credit columns</pre>
+        </div>
+      </div>
+      <div class="step"><p>Assert the invariant across all six models at once - each must conserve the order value within every journey:</p>
+        <div class="prompt-box good">
+          <span class="label">demo1_run_all.py · the safety test</span>
+<pre>for name in MODELS:
+    sums = per_touch.groupby("customer_id")[name].sum()
+    ov   = tp.groupby("customer_id")["order_value"].first()
+    assert np.allclose(sums, ov), f"{name} does not conserve $!"</pre>
+        </div>
+      </div>
+      <div class="step"><p>Run it on Lumen. If the assert passes, every model splits every journey exactly - no dollars invented, none lost.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>The reconciliation table: same journey, six answers <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">Now the payoff. Filter to Lumen's canonical customer and pivot the six models side by side. This is the builder-track version of Leader Session 1's headline chart - except you computed every cell.</p>
+    <div class="steps">
+      <div class="step"><p>Slice the one journey and reshape to channel-by-model:</p>
+        <div class="prompt-box good">
+          <span class="label">demo2_reconcile.py</span>
+<pre>one = per_touch[per_touch.customer_id == "LUMEN_CANON"]
+table = (one.set_index("channel")[list(MODELS)]
+            .round(2))
+print(table)</pre>
+        </div>
+      </div>
+      <div class="step"><p>The result reconciles to canon exactly:</p>
+        <table class="clean">
+          <thead><tr><th>channel</th><th>first</th><th>last</th><th>linear</th><th>time-decay</th><th>position</th><th>last-non-direct</th></tr></thead>
+          <tbody>
+            <tr><td>display</td><td>$92.00</td><td>$0</td><td>$18.40</td><td>~$6</td><td>$36.80</td><td>$0</td></tr>
+            <tr><td>paid_social</td><td>$0</td><td>$0</td><td>$18.40</td><td>~$13</td><td>~$6.13</td><td>$0</td></tr>
+            <tr><td>email</td><td>$0</td><td>$0</td><td>$18.40</td><td>~$19</td><td>~$6.13</td><td>$0</td></tr>
+            <tr><td>organic_search</td><td>$0</td><td>$0</td><td>$18.40</td><td>~$25</td><td>~$6.13</td><td>$0</td></tr>
+            <tr><td>paid_search</td><td>$0</td><td>$92.00</td><td>$18.40</td><td>~$29</td><td>$36.80</td><td>$92.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="step"><p>Read down the <code>display</code> row: $92, then $0, then $18.40, then ~$6, then $36.80, then $0. Same customer, same $92, six verdicts. You just reproduced the credit problem in code - and every column conserves to $92.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>Ship this reconciliation table as an internal tool and it ends more attribution arguments than any slide. When the paid-search owner insists their channel "drives" 41%, you show the row: under linear it is $18.40, under first-touch it is $0. The disagreement was never about data - it was about which rule was quietly running.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>Aggregate to channel-level credit across all Lumen journeys <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">One journey is a teaching example; a budget needs every journey. Roll the six models up to channel totals across all of Lumen and you have produced the exact report each attribution setting would ship.</p>
+    <div class="steps">
+      <div class="step"><p>Group the per-touch credits by channel for each model:</p>
+        <div class="prompt-box good">
+          <span class="label">demo3_channel_rollup.py</span>
+<pre>channel_credit = (per_touch
+    .groupby("channel")[list(MODELS)]
+    .sum()
+    .round(0)
+    .sort_values("last_touch", ascending=False))
+
+# Share of total credit under each model:
+channel_share = (channel_credit / channel_credit.sum() * 100).round(1)
+print(channel_share)   # e.g. paid_search 41% last-touch, far less under first-touch</pre>
+        </div>
+      </div>
+      <div class="step"><p>Compare the <code>last_touch</code> column to <code>first_touch</code>. On Lumen the demand-creating channels (display, paid_social) climb hard when you stop crowning the closer - the create-vs-capture split from Leader Session 1, now quantified.</p></div>
+      <div class="step"><p>Save <code>channel_credit</code> - Session 3 compares these heuristic totals head-to-head against a data-driven model to show exactly where the assumed rules mislead.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>The heuristics' honest limit</strong>
+      Every number you just produced came from a rule you typed, not a pattern you learned. No amount of cleaner Lumen data changes a single cell - only a better <em>model</em> does. That gap is precisely where Session 3 begins.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 3</span>
+      <h2>This week <span class="tag exercise">◐ 35 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Run all three build-alongs on Lumen</strong> and confirm the reconciliation table matches canon to the cent.</li>
+      <li><strong>Re-implement linear and time-decay in pure SQL</strong> on <code>lumen_fct_touchpoints</code> (window <code>COUNT</code> for linear; a windowed exponential for decay). Prove the SQL and pandas outputs agree.</li>
+      <li><strong>Sweep the time-decay half-life</strong> across 1, 7, 30 days and watch the channel rollup slide from near-last-touch toward near-linear. Plot it.</li>
+      <li><strong>Optional:</strong> add a <code>W-shaped</code> model (first, last, and the lead-conversion touch each get 30%) and slot it into the registry. Notice how easily one more asserted rule joins the pile - and how none of them learn.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Under the linear model, the credit each touch receives is...</p>
+      <button class="qopt" type="button">A · The order value times the touch's position</button>
+      <button class="qopt" type="button">B · order_value / n_touches - an equal split</button>
+      <button class="qopt" type="button">C · Whatever the last touch leaves over</button>
+      <p class="qwhy">Linear is one division: $92 / 5 = $18.40 to every touch. It conserves the dollar and asserts that every touch is worth exactly the same.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · In time-decay, the 7-day half-life controls...</p>
+      <button class="qopt" type="button">A · How many channels are allowed in the path</button>
+      <button class="qopt" type="button">B · The lookback window length</button>
+      <button class="qopt" type="button">C · How fast a touch's weight halves as it gets older - weight = 2 ** (-days / 7)</button>
+      <p class="qwhy">Every 7 days back from the conversion, a touch's weight halves. Shrink the half-life and time-decay approaches last-touch; grow it and it flattens toward linear.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · What do all six heuristics have in common that a data-driven model does not?</p>
+      <button class="qopt" type="button">A · They need no training data - credit comes from a fixed rule you assert, not a pattern learned from the dataset</button>
+      <button class="qopt" type="button">B · They always credit paid search</button>
+      <button class="qopt" type="button">C · They can only run in SQL</button>
+      <p class="qwhy">Heuristics are fixed rules. Cleaner Lumen data never changes a single credit cell - only a different rule does. Learning credit from the data is the Session 3 leap.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session implements, in runnable code, the heuristic model family that the leading attribution courses cover conceptually - and reconciles them on one shared journey so leader and builder tracks agree to the cent.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Marketing Attribution and Mix Modeling (LinkedIn Learning) - ch.2</span><span class="note">first/last/linear/time-decay/position - Parts 1-3</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Marketing Measurement: Attribution to Incrementality (Udemy)</span><span class="note">heuristic biases + last-non-direct - Part 3, reconciliation</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Channel-level rollup across all journeys</span><span class="note">the report each model would ship - Build-along 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Why these rules mislead</span><span class="note">the data-driven leap in Builder Session 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Markov &amp; Shapley (learned credit)</span><span class="note">built from scratch in Builder Sessions 4 and 5</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 2 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Linear</b><span>credit = order_value / n_touches. Lumen: $92 / 5 = $18.40 each. The simplest conserving split.</span></div>
+      <div class="cheat-item"><b>Time-decay</b><span>weight = 2 ** (-days_before / half_life), normalize, scale by $. Lumen 7-day: display ~$6 → paid_search ~$29.</span></div>
+      <div class="cheat-item"><b>Position (U)</b><span>0.4 first + 0.4 last, 0.2 split across the middle. Lumen: display &amp; paid_search $36.80, middle 3 ~$6.13.</span></div>
+      <div class="cheat-item"><b>Last-non-direct</b><span>Last-touch, but skip 'direct'. Equals last-touch on Lumen's path (no direct touch present).</span></div>
+      <div class="cheat-item"><b>The invariant</b><span>Every model's credit sums to order_value within each journey. Assert it - it catches almost every bug.</span></div>
+      <div class="cheat-item"><b>The honest limit</b><span>All six need zero training data. Cleaner data never moves a cell - only a different rule does. Hence Session 3.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 2 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b1-touchpoint-data-model.html">← The touchpoint data model</a> &nbsp;·&nbsp; <a href="b3-why-heuristics-fail.html">Next: Why heuristics fail →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

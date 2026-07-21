@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>learn marketing attribution with phoebe - leader + builder tracks</title>
+<link rel="stylesheet" href="assets/style.css?v=1">
+<style>
+  .stats-row { display: flex; gap: 2.4rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .stat b { display: block; font-size: 2.1rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: .72rem; opacity: .85; text-transform: uppercase; letter-spacing: .09em; font-weight: 600; }
+
+  .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .course-card {
+    border: 1px solid var(--hairline);
+    border-top: 4px solid var(--diff, var(--indigo));
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+    position: relative;
+  }
+  .course-card:hover { border-color: var(--indigo-soft); border-top-color: var(--diff, var(--indigo)); box-shadow: 0 8px 28px rgba(15,118,110,.14); transform: translateY(-3px); }
+  .course-card .cicon { font-size: 1.7rem; line-height: 1; }
+  .course-card .cnum { font-size: .72rem; font-weight: 700; color: var(--indigo); text-transform: uppercase; letter-spacing: .1em; }
+  .course-card h3 { font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+  .course-card p { font-size: .85rem; color: var(--muted); flex: 1; }
+  .course-card .meta { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+  .diff-legend { display: flex; gap: 1rem; margin-top: 1.6rem; font-size: .74rem; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
+  .diff-legend i { display: inline-block; width: .85rem; height: .35rem; border-radius: 999px; margin-right: .35rem; vertical-align: middle; }
+
+  .paths { margin-top: 2.6rem; }
+  .paths h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .3rem; }
+  .paths .plede { color: var(--muted); font-size: .92rem; margin-bottom: .8rem; }
+  .path { display: flex; gap: .55rem; align-items: center; padding: .75rem 0; border-bottom: .5px solid var(--hairline); flex-wrap: wrap; }
+  .path:last-child { border-bottom: none; }
+  .path b { min-width: 15.5rem; font-size: .9rem; }
+  .path .pstep { background: var(--indigo-50); color: var(--indigo); border-radius: 999px; padding: .16rem .68rem; font-weight: 700; font-size: .8rem; text-decoration: none; transition: all .12s ease; }
+  .path .pstep:hover { background: var(--indigo); color: #fff; }
+  .path .parr { color: var(--faint); font-weight: 700; }
+
+  .mm-section { margin-top: 1.6rem; }
+  .mm-section h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .2rem; }
+  .mm-section .mm-lede { color: var(--muted); font-size: .92rem; margin-bottom: .4rem; }
+  .mm-wrap { border: 1px solid var(--hairline); border-radius: var(--radius); background: linear-gradient(180deg,#fff, #F2FBF9); padding: .6rem; overflow-x: auto; }
+  .mm-svg { width: 100%; height: auto; display: block; max-width: 60rem; margin: 0 auto; min-width: 34rem; }
+  .mm-link { cursor: pointer; text-decoration: none; }
+  .mm-node rect { transition: opacity .15s ease, filter .15s ease; }
+  .mm-node text { pointer-events: none; }
+  .mm-link:hover .mm-node rect { filter: brightness(1.06); }
+  .mm-edge { transition: opacity .15s ease; }
+
+  .noteband { margin-top: 2.4rem; background: var(--indigo-50); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 1rem 1.2rem; font-size: .9rem; color: var(--ink); }
+  .noteband b { color: var(--indigo); }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe</div>
+    <h1>Who gets the sale? <span class="accent">Attribution modeling</span> for 2026, both halves.</h1>
+    <p class="sub">Two tracks, one running brand. The 6-session leader track teaches CMOs and CDAIOs the thinking moves - read the models, trust the right number, and reallocate a budget without getting fooled by a last-click dashboard. The 10-session builder track takes practitioners from SQL journey-building through Markov and Shapley from scratch, ML and deep-learning attribution, GA4 DDA, marketing mix modeling, and causal geo-lift tests. Built from the leading attribution courses and honest about the 2026 cookieless reality that broke multi-touch and brought MMM back.</p>
+    <div class="stats-row">
+      <div class="stat"><b data-count="16">16</b><span>sessions, 2 tracks</span></div>
+      <div class="stat"><b data-count="8">8</b><span>attribution models decoded</span></div>
+      <div class="stat"><b data-count="3">3</b><span>measurement approaches</span></div>
+      <div class="stat"><b data-count="1">1</b><span>running brand: Lumen</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>The leader track 🤝 <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· for CMOs, CDAIOs &amp; boards · 6 x 45 min · no code</span></h2>
+      <p class="plede">Attribution is a credit-splitting rule you choose, not a fact you measure - and the rule quietly moves your whole budget. This track teaches you to read the models, spot what each one flatters, and defend a spend reallocation to the board. Also a friendly on-ramp for LinkedIn readers.</p>
+    </div>
+    <div class="course-grid">
+      <a class="course-card" href="courses/a1-the-credit-problem.html" style="--diff:#34D399">
+        <span class="cicon">🎯</span>
+        <span class="cnum">Leader session 1 · start here</span>
+        <h3>The credit problem: who gets the sale?</h3>
+        <p>One real journey, eight models, eight different answers - and the reason your last-click dashboard has been quietly lying to you.</p>
+        <span class="meta"><span class="pill amber">▶ Start here</span><span class="pill light">No code</span></span>
+      </a>
+      <a class="course-card" href="courses/a2-heuristic-models.html" style="--diff:#34D399">
+        <span class="cicon">📐</span>
+        <span class="cnum">Leader session 2</span>
+        <h3>The heuristics you already use</h3>
+        <p>First, last, linear, time-decay, position - what each rule biases toward, and how to read a platform report critically.</p>
+        <span class="meta"><span class="pill light">The rules</span></span>
+      </a>
+      <a class="course-card" href="courses/a3-data-driven-decoded.html" style="--diff:#FBBF24">
+        <span class="cicon">🧠</span>
+        <span class="cnum">Leader session 3</span>
+        <h3>Data-driven attribution, decoded</h3>
+        <p>Markov's removal effect and Shapley's fair share - explained without math - plus why GA4's data-driven model is a black box.</p>
+        <span class="meta"><span class="pill light">Learned credit</span></span>
+      </a>
+      <a class="course-card" href="courses/a4-mmm-mta-incrementality.html" style="--diff:#FBBF24">
+        <span class="cicon">⚖️</span>
+        <span class="cnum">Leader session 4</span>
+        <h3>MMM vs MTA vs incrementality</h3>
+        <p>The same question answered three ways, why the numbers disagree, and which method to trust at your budget tier.</p>
+        <span class="meta"><span class="pill light">The measurement triad</span></span>
+      </a>
+      <a class="course-card" href="courses/a5-cookieless-2026.html" style="--diff:#FB923C">
+        <span class="cicon">🍪</span>
+        <span class="cnum">Leader session 5</span>
+        <h3>The 2026 cookieless break</h3>
+        <p>How ATT, SKAN, and cookie loss broke multi-touch, why mix modeling and lift tests came back, and what to demand from your team.</p>
+        <span class="meta"><span class="pill light">The privacy pivot</span></span>
+      </a>
+      <a class="course-card" href="courses/a6-credit-to-budget.html" style="--diff:#FB923C">
+        <span class="cicon">💰</span>
+        <span class="cnum">Leader session 6</span>
+        <h3>From credit to budget</h3>
+        <p>Turn attribution output into a spend reallocation a CDAIO signs - triangulate, move at the margin, and confirm it with a holdout test.</p>
+        <span class="meta"><span class="pill light">Capstone</span></span>
+      </a>
+    </div>
+
+    <div class="paths">
+      <h2>The builder track 🛠️ <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· for practitioners · 10 x 45 min · SQL + Python</span></h2>
+      <p class="plede">For DA, DE, DS, and growth engineers. One running brand - Lumen Skincare - measured every way: build the journey table in SQL, then implement heuristics, Markov, Shapley, ML/DL attribution, GA4 DDA reconciliation, marketing mix modeling, and causal geo-lift tests - from scratch, on the same data.</p>
+    </div>
+    <div class="course-grid">
+      <a class="course-card" href="courses/b1-touchpoint-data-model.html" style="--diff:#34D399">
+        <span class="cicon">🗃️</span>
+        <span class="cnum">Builder session 1 · start here</span>
+        <h3>The touchpoint data model + SQL journeys</h3>
+        <p>The 3-table data model and the window-function SQL that turns raw events into ordered customer journeys. The step no course teaches.</p>
+        <span class="meta"><span class="pill amber">▶ Start here</span><span class="pill light">SQL</span></span>
+      </a>
+      <a class="course-card" href="courses/b2-heuristics-in-code.html" style="--diff:#34D399">
+        <span class="cicon">📐</span>
+        <span class="cnum">Builder session 2</span>
+        <h3>Heuristics in SQL and Python</h3>
+        <p>First, last, linear, time-decay, position - implemented on Lumen, reconciled into one table where the same journey gets six answers.</p>
+        <span class="meta"><span class="pill light">The foundation</span></span>
+      </a>
+      <a class="course-card" href="courses/b3-why-heuristics-fail.html" style="--diff:#FBBF24">
+        <span class="cicon">🪜</span>
+        <span class="cnum">Builder session 3</span>
+        <h3>Why heuristics fail, the data-driven leap</h3>
+        <p>The three failures of fixed rules, then Shao-Li's bagged logistic regression - the historical bridge from heuristics to learned credit.</p>
+        <span class="meta"><span class="pill light">The bridge</span></span>
+      </a>
+      <a class="course-card" href="courses/b4-markov-attribution.html" style="--diff:#FBBF24">
+        <span class="cicon">🔗</span>
+        <span class="cnum">Builder session 4</span>
+        <h3>Markov attribution from scratch</h3>
+        <p>Transition matrices and the removal effect, worked by hand then in numpy - plus why you must normalize and when to go higher-order.</p>
+        <span class="meta"><span class="pill light">Removal effect</span></span>
+      </a>
+      <a class="course-card" href="courses/b5-shapley-attribution.html" style="--diff:#FBBF24">
+        <span class="cicon">🎲</span>
+        <span class="cnum">Builder session 5</span>
+        <h3>Shapley value attribution from scratch</h3>
+        <p>Coalitions, marginal contribution, and the efficiency axiom - exact Shapley with itertools, Monte-Carlo for scale, and the SHAP bridge.</p>
+        <span class="meta"><span class="pill light">Fair share</span></span>
+      </a>
+      <a class="course-card" href="courses/b6-ml-dl-attribution.html" style="--diff:#FB923C">
+        <span class="cicon">🤖</span>
+        <span class="cnum">Builder session 6</span>
+        <h3>ML and deep-learning attribution</h3>
+        <p>Gradient boosting + SHAP as the production path, LSTM-and-attention models (DNAMTA, DeepMTA), and when deep learning just overfits.</p>
+        <span class="meta"><span class="pill light">Learned at scale</span></span>
+      </a>
+      <a class="course-card" href="courses/b7-ga4-dda-reconciliation.html" style="--diff:#FB923C">
+        <span class="cicon">🔬</span>
+        <span class="cnum">Builder session 7</span>
+        <h3>GA4 DDA + reconciling tools</h3>
+        <p>What Google's data-driven model actually does, and how to de-duplicate the same conversion that GA4, Meta, and TikTok all claim.</p>
+        <span class="meta"><span class="pill light">Double-counting</span></span>
+      </a>
+      <a class="course-card" href="courses/b8-mmm-adstock-saturation.html" style="--diff:#FB923C">
+        <span class="cicon">📈</span>
+        <span class="cnum">Builder session 8</span>
+        <h3>MMM: adstock and saturation</h3>
+        <p>Marketing mix modeling on aggregate spend - carryover, Hill saturation curves, and Robyn vs Meridian vs PyMC-Marketing.</p>
+        <span class="meta"><span class="pill light">The privacy-proof model</span></span>
+      </a>
+      <a class="course-card" href="courses/b9-incrementality-geo-lift.html" style="--diff:#F87171">
+        <span class="cicon">🧪</span>
+        <span class="cnum">Builder session 9</span>
+        <h3>Incrementality and geo-lift</h3>
+        <p>The only causal leg: holdout design, synthetic control, and feeding measured lift back to calibrate your MMM priors.</p>
+        <span class="meta"><span class="pill light">The gold standard</span></span>
+      </a>
+      <a class="course-card" href="courses/b10-unified-stack-2026.html" style="--diff:#F87171">
+        <span class="cicon">🏛️</span>
+        <span class="cnum">Builder session 10</span>
+        <h3>The unified 2026 stack</h3>
+        <p>Assemble the calibrated loop - MMM anchor, lift-test calibration, DDA tactics - plus the eleven pitfalls and the ethics of modeling on incomplete data.</p>
+        <span class="meta"><span class="pill light">Capstone</span></span>
+      </a>
+    </div>
+    <div class="diff-legend">
+      <span><i style="background:#34D399"></i>start here - foundations</span>
+      <span><i style="background:#FBBF24"></i>building up - the craft</span>
+      <span><i style="background:#FB923C"></i>getting real - systems &amp; models</span>
+      <span><i style="background:#F87171"></i>advanced - causal &amp; production</span>
+    </div>
+
+    <div class="paths">
+      <h2>Choose your path 🗺️</h2>
+      <p class="plede">Leaders start at Leader session 1; practitioners start at Builder session 1. The fast-tracks fit a specific gap.</p>
+      <div class="path"><b>🤝 Leader journey (no code)</b>
+        <a class="pstep" href="courses/a1-the-credit-problem.html">A1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a2-heuristic-models.html">A2</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a3-data-driven-decoded.html">A3</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a4-mmm-mta-incrementality.html">A4</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a5-cookieless-2026.html">A5</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a6-credit-to-budget.html">A6</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b1-touchpoint-data-model.html">curious? Builder session 1</a>
+      </div>
+      <div class="path"><b>🛠️ Full builder journey</b>
+        <a class="pstep" href="courses/b1-touchpoint-data-model.html">1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b2-heuristics-in-code.html">2</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b3-why-heuristics-fail.html">3</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b4-markov-attribution.html">4</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b5-shapley-attribution.html">5</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b6-ml-dl-attribution.html">6</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b7-ga4-dda-reconciliation.html">7</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b8-mmm-adstock-saturation.html">8</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b9-incrementality-geo-lift.html">9</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b10-unified-stack-2026.html">10</a>
+      </div>
+      <div class="path"><b>🎲 Data-driven fast-track</b>
+        <a class="pstep" href="courses/b1-touchpoint-data-model.html">1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b4-markov-attribution.html">4</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b5-shapley-attribution.html">5</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b6-ml-dl-attribution.html">6</a>
+      </div>
+      <div class="path"><b>📈 MMM + causal fast-track</b>
+        <a class="pstep" href="courses/b1-touchpoint-data-model.html">1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b8-mmm-adstock-saturation.html">8</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b9-incrementality-geo-lift.html">9</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b10-unified-stack-2026.html">10</a>
+      </div>
+      <div class="path"><b>👔 Leader crash course (60 min)</b>
+        <a class="pstep" href="courses/a1-the-credit-problem.html">A1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a4-mmm-mta-incrementality.html">A4</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a6-credit-to-budget.html">A6</a>
+      </div>
+    </div>
+
+    <div class="noteband">
+      <b>One brand, both tracks.</b> Every session works on <b>Lumen Skincare</b> - a synthetic $18M direct-to-consumer skincare label with nine marketing channels and a $4M media budget its CMO needs to defend. Leaders take the CMO's chair and learn to read, trust, and reallocate; builders take the keyboard and measure Lumen every way - the same customer journey scored under first-touch, last-touch, Markov, Shapley, a gradient-boosting model, a mix model, and a geo-lift test, so you feel exactly how much the method changes the answer.
+    </div>
+
+    <div class="noteband">
+      <b>Honest about scope.</b> Sessions distill the leading attribution material - LinkedIn Learning's attribution and mix modeling course, the Udemy measurement and MMM courses, PyMC Labs' Bayesian marketing analytics, Meta Blueprint's conversion-lift path, Google's GA4 and Meridian docs, and the key papers (Shao &amp; Li, DNAMTA, DeepMTA, Shapley). Vendor certificates, videos, and quizzes stay with their official sources. This field moves fast: content verified July 2026, and worth a changelog check on MMM tooling, Apple's AdAttributionKit, and cookie status before delivery.
+    </div>
+  </section>
+
+  <section class="section mm-section">
+    <h2>The knowledge map 🧠</h2>
+    <p class="mm-lede">The builder track at a glance - hover a session to spotlight its concepts, click any node to jump in.</p>
+    <div class="mm-wrap"><div id="mindmap"></div></div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a> · sources: linkedin.com/learning · udemy.com · pymc-labs.com · developers.google.com/meridian · siblings: <a href="https://phoebefu6.github.io/learn-sql-with-phoebe/">learn-sql</a> · <a href="https://phoebefu6.github.io/learn-python-data-analysis-with-phoebe/">learn-python-data-analysis</a></span>
+  </footer>
+</main>
+
+<script>
+window.MINDMAP_DATA = {
+  title: "Marketing\nAttribution",
+  centerColor: "#0B4A45",
+  sessions: [
+    { label: "Touchpoint\ndata model", href: "courses/b1-touchpoint-data-model.html", color: "#34D399",
+      concepts: [
+        { label: "3-table model", href: "courses/b1-touchpoint-data-model.html" },
+        { label: "Window functions", href: "courses/b1-touchpoint-data-model.html" },
+        { label: "Journey paths", href: "courses/b1-touchpoint-data-model.html" } ] },
+    { label: "Heuristics\nin code", href: "courses/b2-heuristics-in-code.html", color: "#34D399",
+      concepts: [
+        { label: "First / last / linear", href: "courses/b2-heuristics-in-code.html" },
+        { label: "Time-decay", href: "courses/b2-heuristics-in-code.html" },
+        { label: "Position-based", href: "courses/b2-heuristics-in-code.html" } ] },
+    { label: "Why heuristics\nfail", href: "courses/b3-why-heuristics-fail.html", color: "#FBBF24",
+      concepts: [
+        { label: "The 3 failures", href: "courses/b3-why-heuristics-fail.html" },
+        { label: "Shao-Li logistic", href: "courses/b3-why-heuristics-fail.html" } ] },
+    { label: "Markov\nattribution", href: "courses/b4-markov-attribution.html", color: "#FBBF24",
+      concepts: [
+        { label: "Transition matrix", href: "courses/b4-markov-attribution.html" },
+        { label: "Removal effect", href: "courses/b4-markov-attribution.html" },
+        { label: "Normalize", href: "courses/b4-markov-attribution.html" } ] },
+    { label: "Shapley\nattribution", href: "courses/b5-shapley-attribution.html", color: "#FBBF24",
+      concepts: [
+        { label: "Marginal contribution", href: "courses/b5-shapley-attribution.html" },
+        { label: "Efficiency axiom", href: "courses/b5-shapley-attribution.html" },
+        { label: "Monte-Carlo + SHAP", href: "courses/b5-shapley-attribution.html" } ] },
+    { label: "ML + DL\nattribution", href: "courses/b6-ml-dl-attribution.html", color: "#FB923C",
+      concepts: [
+        { label: "GBM + SHAP", href: "courses/b6-ml-dl-attribution.html" },
+        { label: "LSTM + attention", href: "courses/b6-ml-dl-attribution.html" },
+        { label: "When it overfits", href: "courses/b6-ml-dl-attribution.html" } ] },
+    { label: "GA4 DDA +\nreconcile", href: "courses/b7-ga4-dda-reconciliation.html", color: "#FB923C",
+      concepts: [
+        { label: "DDA = Shapley+decay", href: "courses/b7-ga4-dda-reconciliation.html" },
+        { label: "Black box", href: "courses/b7-ga4-dda-reconciliation.html" },
+        { label: "Double-counting", href: "courses/b7-ga4-dda-reconciliation.html" } ] },
+    { label: "MMM: adstock\n+ saturation", href: "courses/b8-mmm-adstock-saturation.html", color: "#FB923C",
+      concepts: [
+        { label: "Adstock carryover", href: "courses/b8-mmm-adstock-saturation.html" },
+        { label: "Hill saturation", href: "courses/b8-mmm-adstock-saturation.html" },
+        { label: "Robyn / Meridian", href: "courses/b8-mmm-adstock-saturation.html" } ] },
+    { label: "Incrementality\n+ geo-lift", href: "courses/b9-incrementality-geo-lift.html", color: "#F87171",
+      concepts: [
+        { label: "Holdout design", href: "courses/b9-incrementality-geo-lift.html" },
+        { label: "Synthetic control", href: "courses/b9-incrementality-geo-lift.html" },
+        { label: "Calibrate MMM", href: "courses/b9-incrementality-geo-lift.html" } ] },
+    { label: "Unified\n2026 stack", href: "courses/b10-unified-stack-2026.html", color: "#F87171",
+      concepts: [
+        { label: "The calibrated loop", href: "courses/b10-unified-stack-2026.html" },
+        { label: "11 pitfalls", href: "courses/b10-unified-stack-2026.html" },
+        { label: "Ethics", href: "courses/b10-unified-stack-2026.html" } ] }
+  ]
+};
+</script>
+<script src="assets/mindmap.js?v=1"></script>
+<script src="assets/app.js?v=1"></script>
+</body>
+</html>

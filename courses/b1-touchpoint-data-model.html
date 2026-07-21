@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 1 · The touchpoint data model - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 1 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 1 of 10</div>
+    <h1>The touchpoint data model, <span class="accent">and SQL journeys</span></h1>
+    <p class="sub">Before any model can split a dollar, something has to turn a firehose of raw click events into an ordered journey per customer. That "something" is the part no course teaches - so we build it first. Three tables, one warehouse pattern, and a handful of window functions that quietly implement first-touch, last-touch, and position all at once. By the end you will hand every later session a clean path table on Lumen data. This is your ▶ start button for the builder track.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Start here</span>
+      <span class="chip audience">Builders · DA / DE / DS</span>
+      <span class="chip audience">SQL</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Setup</span>
+      <span class="a2" style="flex:3">3-16 · The data model</span>
+      <span class="a3" style="flex:5">16-40 · Build the journeys</span>
+      <span class="a4" style="flex:1">40-45 · Wrap</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The gap every attribution project falls into</h2>
+    </div>
+    <p class="lede">Every attribution tutorial you have ever read starts with a tidy little dataframe where each row is already a full customer journey. Reality never hands you that. Reality hands you a billion raw events - impressions, clicks, opens - scattered across Snowplow, Segment, a GA4 export, and a Meta CAPI feed, with no notion of "journey" anywhere. Session 1 builds the missing layer: the pipeline that stitches raw events into an ordered, per-customer path table the rest of the course can actually model on. We do it in SQL, on Lumen, with window functions carrying most of the weight.</p>
+    <div class="legend">
+      <span class="pill solid">Live - built in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - everyone codes it</span>
+      <span class="pill inkpill">The data: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A runnable SQL pipeline that takes Lumen's raw <code>touchpoints</code> events and emits (1) an ordered touchpoint table with <code>position_in_path</code> and <code>is_converting_touch</code>, (2) one path string per customer for Markov and Shapley later, and (3) first-touch and last-touch credit in pure SQL. Every later session imports this output.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE 3-TABLE DATA MODEL ============ -->
+  <section class="section" id="data-model">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the schema</span>
+      <h2>The three-table data model <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Lumen's whole world lives in three tables. Get these right and everything downstream - heuristics, Markov, Shapley, MMM - is just a query away. <code>touchpoints</code> is the event log (the grain is one interaction), <code>conversions</code> records the sale, and <code>spend_weekly</code> is the aggregate feed the mix models in B8 will need. Learn the keys that join them.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three Lumen tables: touchpoints, conversions, and spend_weekly, with the keys that join them">
+        <style>
+          .erdT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .erdK { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .erdC { font: 400 11.5px Inter, sans-serif; fill: #10201E; }
+          .erdN { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+          .erdJ { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#erdAh); }
+        </style>
+        <defs>
+          <marker id="erdAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- touchpoints -->
+        <rect x="14" y="30" width="250" height="30" rx="9" fill="#0B4A45"/>
+        <text class="erdT" x="30" y="50">touchpoints · one interaction</text>
+        <rect x="14" y="60" width="250" height="150" fill="#DCEDE9"/>
+        <text class="erdK" x="30" y="80">🔑 touchpoint_id</text>
+        <text class="erdK" x="30" y="99">customer_id  →</text>
+        <text class="erdC" x="30" y="118">event_ts  (ordering key)</text>
+        <text class="erdC" x="30" y="137">channel  (9-enum)</text>
+        <text class="erdC" x="30" y="156">interaction_type · device</text>
+        <text class="erdC" x="30" y="175">cost · geo · campaign</text>
+        <text class="erdN" x="30" y="197">position_in_path, is_converting → derived</text>
+        <!-- conversions -->
+        <rect x="315" y="30" width="250" height="30" rx="9" fill="#0F766E"/>
+        <text class="erdT" x="331" y="50">conversions · one sale</text>
+        <rect x="315" y="60" width="250" height="120" fill="#DCEDE9"/>
+        <text class="erdK" x="331" y="80">🔑 conversion_id</text>
+        <text class="erdK" x="331" y="99">customer_id  →</text>
+        <text class="erdC" x="331" y="118">conversion_ts</text>
+        <text class="erdC" x="331" y="137">order_value  ($92 canon)</text>
+        <text class="erdC" x="331" y="156">product_category</text>
+        <text class="erdC" x="331" y="175">new_vs_returning</text>
+        <!-- spend_weekly -->
+        <rect x="616" y="30" width="250" height="30" rx="9" fill="#14B8A6"/>
+        <text class="erdT" x="632" y="50" style="fill:#10201E">spend_weekly · MMM feed</text>
+        <rect x="616" y="60" width="250" height="120" fill="#DCEDE9"/>
+        <text class="erdK" x="632" y="80">week · channel · geo</text>
+        <text class="erdC" x="632" y="99">spend · revenue</text>
+        <text class="erdC" x="632" y="118">impressions · reach</text>
+        <text class="erdC" x="632" y="137">frequency</text>
+        <text class="erdN" x="632" y="160">aggregate, no journeys -</text>
+        <text class="erdN" x="632" y="176">joined only by channel + geo</text>
+        <!-- join: customer_id touchpoints -> conversions -->
+        <line class="erdJ" x1="264" y1="94" x2="313" y2="94"/>
+        <text class="erdN" x="266" y="86">customer_id</text>
+        <!-- note squares -->
+        <rect x="14" y="250" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="erdN" x="36" y="261" style="fill:#10201E">touchpoints ⋈ conversions on customer_id is the whole game: it tells you which journeys ended in a $ and which did not.</text>
+        <rect x="14" y="278" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="erdN" x="36" y="289" style="fill:#10201E">spend_weekly does NOT join on customer - it is person-level anonymous, which is exactly why MMM survives a cookieless world (B8).</text>
+        <rect x="14" y="306" width="14" height="14" rx="3" fill="#14B8A6"/>
+        <text class="erdN" x="36" y="317" style="fill:#10201E">position_in_path and is_converting_touch are DERIVED - you compute them in Part 2, you never store them raw.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the three Lumen tables and the keys that stitch them together</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why the grain matters<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The single most important word in this session is <strong>grain</strong> - the thing one row represents. In <code>touchpoints</code>, one row is <strong>one interaction</strong>: a single impression, click, or open. Not a session, not a customer, not a journey. Everything else is built up from that atom by grouping and ordering.</p>
+        <ul>
+          <li><strong>touchpoints</strong> - grain = one interaction. This is your raw material. Millions of rows, no order imposed yet.</li>
+          <li><strong>conversions</strong> - grain = one sale. This is the label: did the journey pay off, and for how much (<code>order_value</code>)?</li>
+          <li><strong>spend_weekly</strong> - grain = one channel-week-geo cell. No customer key at all. It exists for mix modeling, which never sees an individual.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>The classic bug: someone joins <code>touchpoints</code> to <code>conversions</code> on <code>customer_id</code> without deduping, so a customer with 5 touches and 1 order suddenly has 5 conversion rows and $460 of revenue instead of $92. Grain discipline - knowing exactly what one row means at every step - is what stops fan-out joins from silently 5x-ing your revenue.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The 9-channel enum, fixed everywhere<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Lumen has exactly nine channels, and the order is fixed across every session so your outputs reconcile. Treat it as an enum, validate against it on ingest, and reject anything else.</p>
+        <table class="clean">
+          <thead><tr><th>Create demand (early)</th><th>Capture demand (late)</th><th>In between</th></tr></thead>
+          <tbody>
+            <tr><td>display, paid_social, influencer, ctv</td><td>paid_search, organic_search, direct</td><td>email, affiliate</td></tr>
+          </tbody>
+        </table>
+        <p>Enum drift is a real production killer: a rogue "Paid Social " with a trailing space becomes a tenth channel, splits your credit, and nobody notices for a quarter. Lowercase, snake_case, validated on write.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: EVENTS TO JOURNEYS ============ -->
+  <section class="section" id="events-to-journeys">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the pipeline</span>
+      <h2>From raw events to journeys with window functions <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Here is the data-stack pattern the whole industry converged on. Raw events land from your collectors, the warehouse holds them cheaply, dbt sessionizes and stitches, and out the other end comes a touchpoint fact table with an ordered path per customer. The magic in the middle is a small set of window functions.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pipeline from raw event collectors to warehouse to dbt sessionize and stitch to an ordered touchpoint path table">
+        <style>
+          .plT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .plS { font: 400 11px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .plX { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+          .plW { font: 700 11px Inter, sans-serif; fill: #FFFFFF; }
+          .plA { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#plAh); }
+        </style>
+        <defs>
+          <marker id="plAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <rect x="10" y="40" width="180" height="86" rx="12" fill="#0B4A45"/>
+        <text class="plT" x="26" y="66">Raw collectors</text>
+        <text class="plS" x="26" y="86">Snowplow · Segment</text>
+        <text class="plS" x="26" y="103">GA4 export · Meta CAPI</text>
+        <text class="plS" x="26" y="120">firehose of events</text>
+        <rect x="230" y="40" width="180" height="86" rx="12" fill="#0F766E"/>
+        <text class="plT" x="246" y="66">Warehouse</text>
+        <text class="plS" x="246" y="86">BigQuery · Snowflake</text>
+        <text class="plS" x="246" y="103">cheap storage,</text>
+        <text class="plS" x="246" y="120">raw events land here</text>
+        <rect x="450" y="40" width="180" height="86" rx="12" fill="#2A9D8F"/>
+        <text class="plT" x="466" y="66">dbt transform</text>
+        <text class="plS" x="466" y="86">sessionize + stitch</text>
+        <text class="plS" x="466" y="103">ROW_NUMBER, STRING_AGG</text>
+        <text class="plS" x="466" y="120">FIRST/LAST_VALUE</text>
+        <rect x="670" y="40" width="196" height="86" rx="12" fill="#14B8A6"/>
+        <text class="plT" x="686" y="66" style="fill:#10201E">Touchpoint fact table</text>
+        <text class="plS" x="686" y="86" style="fill:#10201E">ordered path per</text>
+        <text class="plS" x="686" y="103" style="fill:#10201E">customer, ready for</text>
+        <text class="plS" x="686" y="120" style="fill:#10201E">every model B2-B10</text>
+        <line class="plA" x1="190" y1="83" x2="228" y2="83"/>
+        <line class="plA" x1="410" y1="83" x2="448" y2="83"/>
+        <line class="plA" x1="630" y1="83" x2="668" y2="83"/>
+        <!-- the transform detail row -->
+        <rect x="10" y="176" width="856" height="44" rx="10" fill="#DCEDE9"/>
+        <text class="plX" x="26" y="194" style="fill:#10201E">Inside "stitch": PARTITION BY customer_id ORDER BY event_ts turns an unordered pile of rows into a numbered journey.</text>
+        <text class="plX" x="26" y="211" style="fill:#10201E">ROW_NUMBER → position · STRING_AGG → path string · FIRST_VALUE/LAST_VALUE → first &amp; last touch, all in one pass.</text>
+        <rect x="10" y="240" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="plX" x="32" y="251" style="fill:#10201E">"Sessionize" = split a customer's events into visits by an inactivity gap (e.g. 30 min). "Stitch" = order and number them into a lifetime path.</text>
+        <rect x="10" y="266" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="plX" x="32" y="277" style="fill:#10201E">You do NOT need a Python ML library for any of this - the warehouse does it. Model libraries only enter in B3 onward.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the raw-events → warehouse → dbt → path-table pipeline everyone actually runs</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The four window functions that do the work<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Attribution heuristics are not exotic - they are window functions in disguise. Once you see the mapping, first-touch and last-touch stop being "models" and become one-liners.</p>
+        <ul>
+          <li><strong>ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY event_ts)</strong> - stamps each touch with its <code>position_in_path</code>. Position 1 is the first-touch, the max is the last.</li>
+          <li><strong>FIRST_VALUE(channel)</strong> over that same window - the first-touch channel, directly.</li>
+          <li><strong>LAST_VALUE(channel)</strong> - the last-touch channel, but only if you fix the frame (see the demo - the default frame bites everyone once).</li>
+          <li><strong>STRING_AGG / ARRAY_AGG(channel ORDER BY event_ts)</strong> - collapses the journey into one <code>path</code> value, which is the input format Markov (B4) and Shapley (B5) expect.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>Same window, many models</strong>
+          Notice all four share <em>one</em> window spec: <code>PARTITION BY customer_id ORDER BY event_ts</code>. That partition-and-order is the single idea underneath every position-based attribution rule. Learn it once, reuse it everywhere.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: WINDOWS + PATH STRING ============ -->
+  <section class="section" id="windows-path">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the rules of the road</span>
+      <h2>Attribution windows and the path string <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Two decisions quietly shape every number downstream: how far back you look, and how you serialize a journey. Both must be stated explicitly, because both are choices - not facts.</p>
+
+    <details class="card" open>
+      <summary><span class="mode self">Self-study</span>Lookback windows - state them or regret them<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>An <strong>attribution window</strong> (or lookback) is the maximum age of a touch that is allowed to earn credit for a conversion. Lumen uses a <strong>90-day lookback</strong> for the standard model, matching its 7-21 day consideration cycle with headroom. A touch older than 90 days before the sale is dropped from the path.</p>
+        <ul>
+          <li><strong>Too short</strong> and you amputate the demand-creating channels - a display impression 40 days out vanishes, and display looks worthless (the Session A1 mistake, now in SQL).</li>
+          <li><strong>Too long</strong> and you glue unrelated journeys together, crediting a channel for a sale it had nothing to do with.</li>
+          <li><strong>Always write it in the query and the report.</strong> "Paid search drove 41%" is meaningless without "under a 90-day last-touch window". The window is part of the number.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why the path string matters<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The <code>path</code> string - <code>display &gt; paid_social &gt; email &gt; organic_search &gt; paid_search</code> - looks trivial, but it is the pivot of the entire course. Markov models (B4) build a transition matrix by counting how often one channel follows another <em>in that string</em>. Shapley (B5) treats the <strong>set</strong> of channels in the string as a coalition. Get the ordering or the delimiter wrong here and every learned model downstream is wrong too.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Teams often store the path with a comma delimiter, then a campaign name contains a comma, and the whole path parser shatters months later. Pick a delimiter that cannot appear in a channel name (<code> &gt; </code> is safe because channels are a fixed enum), and validate it on write.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Build the ordered touchpoint table <span class="tag demo">★ 8 min · everyone</span></h2>
+    </div>
+    <p class="lede">Our first query turns raw Lumen events into a numbered journey. <code>ROW_NUMBER()</code> gives every touch its position; a windowed <code>MAX</code> flags the converting touch. This is the table every later session imports.</p>
+    <div class="steps">
+      <div class="step"><p>Open your warehouse (BigQuery or SQLite both run this with tiny dialect tweaks). Point it at Lumen's raw <code>touchpoints</code>.</p></div>
+      <div class="step"><p>Apply the 90-day lookback in the <code>WHERE</code>, then number and flag with window functions:</p>
+        <div class="prompt-box good">
+          <span class="label">demo1_ordered_touchpoints.sql</span>
+<pre>-- Ordered Lumen touchpoint fact table
+-- One row per interaction, numbered within each customer journey
+SELECT
+  touchpoint_id,
+  customer_id,
+  event_ts,
+  channel,
+  interaction_type,
+  cost,
+  ROW_NUMBER() OVER (
+    PARTITION BY customer_id
+    ORDER BY event_ts
+  ) AS position_in_path,
+  -- the last touch in each journey = the converting touch
+  CASE
+    WHEN event_ts = MAX(event_ts) OVER (PARTITION BY customer_id)
+    THEN TRUE ELSE FALSE
+  END AS is_converting_touch
+FROM touchpoints
+WHERE event_ts &gt;= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY)
+ORDER BY customer_id, position_in_path;</pre>
+        </div>
+      </div>
+      <div class="step"><p>Run it and eyeball Lumen's canonical customer: five rows, <code>position_in_path</code> 1 through 5, <code>display</code> at position 1 and <code>paid_search</code> at position 5 with <code>is_converting_touch = TRUE</code>. That matches the $92 journey exactly.</p></div>
+      <div class="step"><p>Materialize it (<code>CREATE TABLE lumen_fct_touchpoints AS ...</code> or a dbt model). Every session from B2 on reads this table, so name it once and never recompute the ordering ad hoc.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>The default-frame trap, previewed</strong>
+      <code>ROW_NUMBER</code> and <code>MAX ... OVER</code> are safe here, but <code>LAST_VALUE</code> is not - it uses a running frame by default. We fix that in Build-along 3. If your "last touch" ever looks like the current row instead of the real last one, that frame is why.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>Build the journey path string per customer <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">Now collapse each ordered journey into a single <code>path</code> string. <code>STRING_AGG</code> with an <code>ORDER BY</code> inside it is the one-liner that feeds Markov and Shapley.</p>
+    <div class="steps">
+      <div class="step"><p>Aggregate the fact table down to one row per customer, ordering channels by time inside the aggregate:</p>
+        <div class="prompt-box good">
+          <span class="label">demo2_journey_paths.sql</span>
+<pre>-- Collapse each customer's ordered touches into ONE path string
+SELECT
+  customer_id,
+  STRING_AGG(channel, ' &gt; ' ORDER BY event_ts) AS path,
+  COUNT(*)        AS n_touches,
+  MIN(event_ts)   AS first_touch_ts,
+  MAX(event_ts)   AS last_touch_ts
+FROM lumen_fct_touchpoints
+GROUP BY customer_id;
+
+-- Lumen's canonical customer returns:
+-- display &gt; paid_social &gt; email &gt; organic_search &gt; paid_search
+-- n_touches = 5</pre>
+        </div>
+      </div>
+      <div class="step"><p>On BigQuery it is <code>STRING_AGG</code>; on Snowflake <code>LISTAGG</code>; on Postgres <code>STRING_AGG</code> too but the <code>ORDER BY</code> goes <code>WITHIN GROUP</code>. Same idea, watch the dialect.</p></div>
+      <div class="step"><p>Prefer <code>ARRAY_AGG(channel ORDER BY event_ts)</code> when the next step is Python - you get a real list, no re-parsing a delimited string.</p></div>
+      <div class="step"><p>Sanity-check: <code>COUNT(DISTINCT path)</code> tells you how many unique journey shapes Lumen has. That number is the state space Markov will work over in B4.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>This one table - <code>customer_id, path, n_touches</code> - is often the single most reused artifact in a whole attribution stack. Analysts build dashboards off it, data scientists featurize from it, and the Markov/Shapley jobs read it directly. Ship it clean and you have earned your keep for the quarter.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>First-touch and last-touch in pure SQL <span class="tag demo">★ 7 min · everyone</span></h2>
+    </div>
+    <p class="lede">Two attribution "models", zero libraries. <code>FIRST_VALUE</code> and <code>LAST_VALUE</code> read the endpoints of each journey straight out of the window - once you fix the frame.</p>
+    <div class="steps">
+      <div class="step"><p>Grab both endpoints per customer. The named <code>WINDOW</code> clause keeps it readable and lets both functions share one spec:</p>
+        <div class="prompt-box good">
+          <span class="label">demo3_first_last_touch.sql</span>
+<pre>-- First-touch and last-touch credit, no library needed
+SELECT DISTINCT
+  customer_id,
+  FIRST_VALUE(channel) OVER w AS first_touch_channel,
+  LAST_VALUE(channel)  OVER w AS last_touch_channel
+FROM lumen_fct_touchpoints
+WINDOW w AS (
+  PARTITION BY customer_id
+  ORDER BY event_ts
+  -- CRITICAL: without this frame, LAST_VALUE returns the CURRENT row,
+  -- not the real last touch of the journey
+  ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+);
+
+-- Lumen canonical customer ->
+-- first_touch_channel = display,  last_touch_channel = paid_search</pre>
+        </div>
+      </div>
+      <div class="step"><p>Delete the <code>ROWS BETWEEN ...</code> line and rerun. Watch <code>last_touch_channel</code> turn into whatever row you are on. That is the default running frame - the bug that has cost more analysts a bad afternoon than any other in SQL attribution.</p></div>
+      <div class="step"><p>To turn these into <em>dollars</em>, join to <code>conversions</code> on <code>customer_id</code> and assign the full <code>order_value</code> to the first (or last) channel. First-touch hands display the whole $92; last-touch hands it to paid_search - exactly the mirror image from Leader Session 1.</p></div>
+      <div class="step"><p>Aggregate to channel level (<code>GROUP BY last_touch_channel, SUM(order_value)</code>) and you have just reproduced the last-click revenue report every dashboard ships - now you know precisely what rule it encodes.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>You just built three models without saying "model"</strong>
+      Position numbering, path strings, first/last credit - all pure SQL. B2 adds linear, time-decay, and position-based on top of this same table. You never leave the warehouse until the math genuinely needs it.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 2</span>
+      <h2>This week <span class="tag exercise">◐ 40 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Run all three build-alongs on Lumen and materialize <code>lumen_fct_touchpoints</code>.</strong> B2 assumes it exists - do not skip this.</li>
+      <li><strong>Add an <code>attribution_window_days</code> parameter</strong> to the ordering query and try 30, 60, 90. Note how many touches drop out of the demand-creating channels at 30 days.</li>
+      <li><strong>Write the dbt version.</strong> Turn Build-along 1 into a dbt model with a test that <code>position_in_path</code> starts at 1 for every customer. This is the production shape.</li>
+      <li><strong>Optional:</strong> compute <code>COUNT(DISTINCT path)</code> and the top 10 most common paths on Lumen. You will recognize these journey shapes again in B4.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · To turn a pile of raw events into ordered per-customer journeys, the window function should...</p>
+      <button class="qopt" type="button">A · PARTITION BY event_ts ORDER BY customer_id</button>
+      <button class="qopt" type="button">B · PARTITION BY customer_id ORDER BY event_ts</button>
+      <button class="qopt" type="button">C · GROUP BY channel with no ordering</button>
+      <p class="qwhy">You partition by the journey key (customer_id) and order by the time key (event_ts). That one spec underlies position_in_path, first-touch, and last-touch alike.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · Why build the <code>path</code> string with STRING_AGG / ARRAY_AGG at all?</p>
+      <button class="qopt" type="button">A · It makes the table smaller on disk</button>
+      <button class="qopt" type="button">B · It is required by GA4</button>
+      <button class="qopt" type="button">C · It is the input format Markov and Shapley need - transitions and coalitions read off the path</button>
+      <p class="qwhy">Markov counts channel-to-channel transitions in the ordered path; Shapley treats the channel set as a coalition. No path string, no learned models downstream.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · A colleague reports "paid search drove 41% of revenue." What is missing before you can trust it?</p>
+      <button class="qopt" type="button">A · The stated lookback window - a number without its attribution window is meaningless</button>
+      <button class="qopt" type="button">B · Nothing, the number speaks for itself</button>
+      <button class="qopt" type="button">C · A bigger sample of channels</button>
+      <p class="qwhy">The window is part of the number. "41% under a 90-day last-touch window" is a claim; "41%" alone is not. Always state the lookback in the query and the report.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This is the coverage gap the course owns outright: no existing attribution course teaches the SQL pipeline that produces the journey table everyone else assumes you already have. We build it from the warehouse pattern the industry actually runs.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">GAP #5 (original) - SQL touchpoint/journey construction</span><span class="note">the 3-table model + window functions - Parts 1-2, all build-alongs</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">dbt / warehouse sessionize + stitch pattern</span><span class="note">raw events → warehouse → dbt → fact table - Part 2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Attribution / lookback windows</span><span class="note">90-day lookback, stated explicitly - Part 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">The heuristic models on this table</span><span class="note">linear, time-decay, position in Builder Session 2</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Production collectors (Snowplow / Segment setup)</span><span class="note">named as the source layer, not built - out of scope by design</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 1 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>3 tables</b><span>touchpoints (grain = 1 interaction) · conversions (grain = 1 sale) · spend_weekly (channel-week-geo, no customer key).</span></div>
+      <div class="cheat-item"><b>The one window spec</b><span>PARTITION BY customer_id ORDER BY event_ts - underlies position, first-touch, and last-touch all at once.</span></div>
+      <div class="cheat-item"><b>Four functions</b><span>ROW_NUMBER → position · FIRST_VALUE → first-touch · LAST_VALUE → last-touch (fix the frame!) · STRING_AGG → path.</span></div>
+      <div class="cheat-item"><b>LAST_VALUE trap</b><span>Default frame runs to the current row. Add ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING.</span></div>
+      <div class="cheat-item"><b>Lookback window</b><span>Lumen = 90 days. Always stated. A number without its window is not a number.</span></div>
+      <div class="cheat-item"><b>The pipeline</b><span>raw collectors → warehouse → dbt sessionize + stitch → touchpoint fact table → every model B2-B10.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 1 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="../index.html">← All sessions</a> &nbsp;·&nbsp; <a href="b2-heuristics-in-code.html">Next: Heuristics in code →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 10 · The unified 2026 measurement stack - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 10 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 10 of 10</div>
+    <h1>The unified 2026 <span class="accent">measurement stack</span></h1>
+    <p class="sub">You have built every piece: SQL journeys, heuristics, Markov, Shapley, ML attribution, GA4 DDA, MMM with adstock and saturation, and geo-lift incrementality. This capstone assembles them into one thing - a calibrated loop, not a single tool. MMM anchors the quarterly budget, incrementality tests give it causal ground truth, and modeled attribution steers daily tactics. You will write Lumen's full measurement plan, build the reconciliation dashboard where the three methods agree, and run the eleven-pitfall audit on your own stack. This is the session that turns a pile of models into a system you can defend.</p>
+    <div class="chip-row">
+      <span class="chip level" style="color:#DC2626">🔴 Hardest</span>
+      <span class="chip audience">Builders</span>
+      <span class="chip audience">Capstone</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-4 · The loop</span>
+      <span class="a2" style="flex:3">4-22 · Stack + pitfalls</span>
+      <span class="a3" style="flex:5">22-40 · Plan, reconcile, audit</span>
+      <span class="a4" style="flex:1">40-45 · Ship it</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>From a pile of models to a system</h2>
+    </div>
+    <p class="lede">Nine sessions gave you nine ways to answer "what worked?" - and they disagree, on purpose. The mistake is to pick a winner. The 2026 answer is to <strong>orchestrate</strong> them: each method is good at a different question and a different cadence, and you wire them into a loop where the causal method calibrates the correlational one and the fast method steers the day-to-day. No single tool is the truth. The <em>system</em> is.</p>
+    <div class="legend">
+      <span class="pill solid">Live - built in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - run the code yourself</span>
+      <span class="pill inkpill">Capstone: the whole Lumen stack</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A one-page Lumen measurement plan (which method answers which question, at which cadence), a reconciliation dashboard that flags where MMM, MTA and lift agree - and where they do not - and a working audit against the eleven pitfalls that break real attribution stacks.
+    </div>
+    <div class="callout tip">
+      <strong>The one idea of the whole course</strong>
+      MMM for the strategic budget, incrementality for causal truth, DDA/MTA for daily tactics - a calibrated loop, not a single tool. Everything else this session is detail on how to run that loop without fooling yourself.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE LOOP ============ -->
+  <section class="section" id="loop">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the architecture</span>
+      <h2>The calibrated loop: MMM + incrementality + DDA <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Three methods, three roles, wired in a cycle. MMM sets the strategic budget. Incrementality experiments give MMM its causal calibration. Data-driven attribution steers the daily tactical moves inside that budget. Each feeds the next - and the feedback arrows are the whole point.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A three-part loop: MMM strategic, incrementality causal, and DDA tactical, connected by feedback arrows">
+        <style>
+          .lpT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .lpR { font: 700 11.5px Inter, sans-serif; fill: #FFFFFF; opacity: .9; }
+          .lpS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .lpE { font: 700 11px Inter, sans-serif; fill: #10201E; }
+          .lpN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+        </style>
+        <defs>
+          <marker id="lpAh" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7" fill="none" stroke="#0F766E" stroke-width="1.8"/>
+          </marker>
+        </defs>
+        <!-- MMM node top -->
+        <rect x="330" y="30" width="220" height="86" rx="16" fill="#0B4A45"/>
+        <text class="lpT" x="352" y="60">MMM</text>
+        <text class="lpR" x="352" y="80">role · STRATEGIC</text>
+        <text class="lpS" x="352" y="100">quarterly budget across channels</text>
+        <!-- Incrementality node bottom-left -->
+        <rect x="70" y="220" width="230" height="100" rx="16" fill="#0F766E"/>
+        <text class="lpT" x="92" y="252">Incrementality</text>
+        <text class="lpR" x="92" y="272">role · CAUSAL</text>
+        <text class="lpS" x="92" y="292">geo-lift / holdout experiments</text>
+        <text class="lpS" x="92" y="310">the ground truth</text>
+        <!-- DDA node bottom-right -->
+        <rect x="580" y="220" width="230" height="100" rx="16" fill="#14B8A6"/>
+        <text class="lpT" x="602" y="252" style="fill:#10201E">DDA / MTA</text>
+        <text class="lpE" x="602" y="272">role · TACTICAL</text>
+        <text class="lpN" x="602" y="292">Markov / Shapley / GA4 DDA</text>
+        <text class="lpN" x="602" y="310">daily channel steering</text>
+        <!-- arrows around the loop -->
+        <path d="M300,255 C 250,150 300,95 328,88" stroke="#0F766E" stroke-width="2.6" fill="none" marker-end="url(#lpAh)"/>
+        <text class="lpN" x="205" y="150">lift → calibrates</text>
+        <text class="lpN" x="205" y="167">MMM priors</text>
+        <path d="M552,88 C 590,150 620,180 660,216" stroke="#0F766E" stroke-width="2.6" fill="none" marker-end="url(#lpAh)"/>
+        <text class="lpN" x="600" y="150">budget →</text>
+        <text class="lpN" x="600" y="167">sets tactical ceiling</text>
+        <path d="M578,300 L302,300" stroke="#0F766E" stroke-width="2.6" fill="none" marker-end="url(#lpAh)"/>
+        <text class="lpN" x="360" y="292">tactics surface channels worth testing next</text>
+        <rect x="70" y="338" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="lpN" x="92" y="349">Not a hierarchy - a cycle. The causal leg keeps the correlational legs honest; the fast leg keeps the slow leg relevant.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the calibrated loop: MMM (strategic) ← incrementality (causal) → DDA (tactical), each feeding the next</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Each method's job, cadence, and question<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Method</th><th>Answers</th><th>Cadence</th></tr></thead>
+          <tbody>
+            <tr><td>MMM (strategic)</td><td>How should we split the whole budget across channels?</td><td>Quarterly / annual</td></tr>
+            <tr><td>Incrementality (causal)</td><td>Does this channel actually cause sales, and by how much?</td><td>A few big tests a year</td></tr>
+            <tr><td>DDA / MTA (tactical)</td><td>Which campaigns and creatives to shift this week?</td><td>Daily / weekly</td></tr>
+          </tbody>
+        </table>
+        <p>The failure mode is using one for another's job - a daily MTA number to set the annual budget, or a slow MMM to pause a campaign today. Match the method to the decision's stakes and speed.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE 2026 STACK ============ -->
+  <section class="section" id="stack">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · orchestration</span>
+      <h2>The 2026 stack, wired on Lumen <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">The loop becomes a pipeline: raw events land in the warehouse, three method families read from the same governed tables, and their outputs converge on one set of decisions. And it all sits inside the 2026 privacy reality - which is exactly why MMM and lift resurged.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A layered pipeline: raw data to warehouse to three method families to decisions">
+        <style>
+          .stT { font: 700 13.5px Inter, sans-serif; fill: #FFFFFF; }
+          .stS { font: 400 11px Inter, sans-serif; fill: #FFFFFF; opacity: .9; }
+          .stN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .stL { font: 600 11px Inter, sans-serif; fill: #5B7671; }
+        </style>
+        <defs>
+          <marker id="stAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- layer 1: raw data -->
+        <rect x="20" y="60" width="130" height="200" rx="12" fill="#0B4A45"/>
+        <text class="stT" x="38" y="88">Raw events</text>
+        <text class="stS" x="38" y="112">touchpoints</text>
+        <text class="stS" x="38" y="130">conversions</text>
+        <text class="stS" x="38" y="148">spend_weekly</text>
+        <text class="stS" x="38" y="166">geo revenue</text>
+        <!-- layer 2: warehouse -->
+        <rect x="190" y="60" width="130" height="200" rx="12" fill="#0F766E"/>
+        <text class="stT" x="208" y="88">Warehouse</text>
+        <text class="stS" x="208" y="112">governed</text>
+        <text class="stS" x="208" y="130">tables, one</text>
+        <text class="stS" x="208" y="148">source of</text>
+        <text class="stS" x="208" y="166">truth</text>
+        <!-- layer 3: three method families -->
+        <rect x="360" y="40" width="200" height="66" rx="11" fill="#14B8A6"/>
+        <text class="stN" x="378" y="66">MTA / Markov / Shapley</text>
+        <text class="stL" x="378" y="88" style="fill:#10201E">tactical · daily</text>
+        <rect x="360" y="130" width="200" height="66" rx="11" fill="#0B4A45"/>
+        <text class="stT" x="378" y="156">MMM (adstock + Hill)</text>
+        <text class="stS" x="378" y="178">strategic · quarterly</text>
+        <rect x="360" y="220" width="200" height="66" rx="11" fill="#0F766E"/>
+        <text class="stT" x="378" y="246">Lift tests (geo / RCT)</text>
+        <text class="stS" x="378" y="268">causal · a few a year</text>
+        <!-- layer 4: decisions -->
+        <rect x="620" y="110" width="150" height="120" rx="14" fill="#5EEAD4"/>
+        <text class="stN" x="638" y="150">Decisions</text>
+        <text class="stL" x="638" y="174" style="fill:#10201E">budget split</text>
+        <text class="stL" x="638" y="192" style="fill:#10201E">channel shifts</text>
+        <text class="stL" x="638" y="210" style="fill:#10201E">what to test</text>
+        <!-- arrows -->
+        <path d="M150,160 L188,160" stroke="#B9D6D0" stroke-width="2.4" fill="none" marker-end="url(#stAh)"/>
+        <path d="M320,120 L358,90" stroke="#B9D6D0" stroke-width="2.4" fill="none" marker-end="url(#stAh)"/>
+        <path d="M320,160 L358,163" stroke="#B9D6D0" stroke-width="2.4" fill="none" marker-end="url(#stAh)"/>
+        <path d="M320,200 L358,236" stroke="#B9D6D0" stroke-width="2.4" fill="none" marker-end="url(#stAh)"/>
+        <path d="M560,73 L618,140" stroke="#B9D6D0" stroke-width="2.4" fill="none" marker-end="url(#stAh)"/>
+        <path d="M560,163 L618,170" stroke="#B9D6D0" stroke-width="2.4" fill="none" marker-end="url(#stAh)"/>
+        <path d="M560,253 L618,200" stroke="#B9D6D0" stroke-width="2.4" fill="none" marker-end="url(#stAh)"/>
+        <!-- feedback arrow lift -> mmm -->
+        <path d="M460,220 L460,198" stroke="#F97316" stroke-width="2.4" fill="none" marker-end="url(#stAh)"/>
+        <rect x="20" y="300" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="stL" x="42" y="311" style="fill:#10201E">One warehouse, three method families, one decision layer. The orange arrow is lift calibrating MMM - the loop from Part 1.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - raw events → warehouse → three method families → decisions, with lift feeding back into MMM</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The 2026 privacy reality this sits inside<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Why this shape and not a single MTA dashboard? Because of what broke:</p>
+        <ul>
+          <li><strong>Cookies partly survived</strong> Chrome's long deprecation saga - but MTA broke anyway. Safari and Firefox block third-party cookies, Apple's ATT gutted mobile signal, and SKAN / AAK aggregation strips user-level detail. MTA now misses an estimated <strong>30 to 60% of touches</strong>.</li>
+          <li><strong>MMM and lift resurged</strong> precisely because they run on aggregate and experimental data - which no browser update or OS privacy change can revoke. Privacy-proof by construction.</li>
+          <li><strong>So MTA is demoted, not deleted:</strong> it is a tactical signal on the consented slice you can still see, kept honest by MMM and lift. That is the whole reason the stack is a loop and not a single tool.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>The lazy 2026 take is "cookies came back, so MTA is fine again." It is wrong: cookies were never the only thing that broke MTA. Safari, Firefox and ATT never used third-party cookies to begin with, and their walls are still up. Any stack betting on MTA alone is measuring a shrinking, biased half of reality.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: PITFALLS + ETHICS ============ -->
+  <section class="section" id="pitfalls">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · what breaks stacks</span>
+      <h2>The eleven-pitfall checklist + ethics <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Every pitfall below has sunk a real attribution program. Read them as a pre-flight checklist - if your stack does any of these, fix it before you trust a number.</p>
+
+    <table class="clean">
+      <thead><tr><th>Pitfall</th><th>The fix</th></tr></thead>
+      <tbody>
+        <tr><td>1 · Calling heuristics "data-driven"</td><td>Heuristics are fixed rules. Reserve "data-driven" for Markov / Shapley / DDA that learn credit from the data.</td></tr>
+        <tr><td>2 · Last-touch as default truth</td><td>It is a tactical read that over-credits demand-capture. Never set a budget on it alone.</td></tr>
+        <tr><td>3 · Treating correlation as causation</td><td>Only experiments are causal. Label MTA / Markov / Shapley / MMM as correlational everywhere they are reported.</td></tr>
+        <tr><td>4 · Not normalizing Markov removal effects</td><td>Removal effects do not sum to 1 - always normalize before you split revenue, or credit leaks.</td></tr>
+        <tr><td>5 · Exact Shapley at O(2^n) cost</td><td>For many channels use Monte-Carlo Shapley; exact coalitions explode past ~15 channels.</td></tr>
+        <tr><td>6 · Attribution windows silently changing results</td><td>Fix and document the lookback window. A 7-day vs 30-day window can flip which channel "wins".</td></tr>
+        <tr><td>7 · Missing-touchpoint bias (2026)</td><td>MTA misses 30-60% of touches. Do not report it as complete - triangulate with MMM and lift.</td></tr>
+        <tr><td>8 · Double-counting across tools</td><td>GA4, the ad platforms and MMM all claim the same conversion. Reconcile to one governed number.</td></tr>
+        <tr><td>9 · Ignoring view-through vs click-through</td><td>An impression is not a click. Keep them separate or you inflate awareness channels.</td></tr>
+        <tr><td>10 · MMM without incrementality calibration</td><td>An uncalibrated MMM is a confident correlation. Anchor it with lift-test priors (Session 9).</td></tr>
+        <tr><td>11 · Overfitting deep models on sparse data</td><td>LSTM / attention MTA needs volume. On thin data a simpler model generalizes better - do not chase the fancy one.</td></tr>
+      </tbody>
+    </table>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The ethics layer you own as the builder<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Three responsibilities that are not optional in 2026:</p>
+        <ul>
+          <li><strong>Privacy and consent.</strong> Model on data you have the right to use. Aggregate and experimental methods (MMM, lift) are not just privacy-resilient - they are the privacy-respectful default.</li>
+          <li><strong>Honesty about incomplete data.</strong> When MTA sees half the touches, reporting its number with false confidence is a form of lying. Carry the uncertainty forward - intervals, not just points.</li>
+          <li><strong>Transparency to stakeholders.</strong> Tell the CMO which model produced a number, what it over-credits, and how sure you are. The builder who names the model's limits earns more trust than the one who hides them.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The builder's oath</strong>
+          Name the method, carry the uncertainty, and never let a correlational number wear a causal costume. Do that and your stack is not just accurate - it is defensible.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Assemble Lumen's measurement plan <span class="tag demo">★ 7 min · map it</span></h2>
+    </div>
+    <p class="lede">Turn the loop into an actual plan: for each business question Lumen's CMO asks, which method answers it, and on what cadence? Encode it so it is a living config, not a slide.</p>
+    <div class="prompt-box good"><span class="label">Python · the plan as config</span># Lumen's measurement plan: question -> method -> cadence -> what it can/can't say
+plan = [
+    {"question": "How do we split the $4M annual budget?",
+     "method": "MMM (adstock + Hill saturation)",
+     "cadence": "quarterly", "caveat": "correlational - must be lift-calibrated"},
+    {"question": "Does paid_social actually cause sales?",
+     "method": "geo-lift incrementality test",
+     "cadence": "2-3 big tests / year", "caveat": "causal, but scoped + slow"},
+    {"question": "Which campaigns to shift this week?",
+     "method": "GA4 DDA + Markov (data-driven MTA)",
+     "cadence": "daily / weekly", "caveat": "misses 30-60% of touches"},
+    {"question": "Where does the next dollar earn most?",
+     "method": "MMM response curve (marginal return)",
+     "cadence": "quarterly", "caveat": "read the knee, not the average"},
+]
+
+import pandas as pd
+plan_df = pd.DataFrame(plan)
+print(plan_df.to_string(index=False))</div>
+    <div class="steps">
+      <div class="step"><p><strong>Question first, tool second.</strong> The plan is organized by the CMO's questions, not by your models. That is what makes it a plan and not a tech inventory.</p></div>
+      <div class="step"><p><strong>Cadence is a first-class field.</strong> Daily tactics and quarterly strategy run on different clocks. Writing the cadence down stops anyone using a weekly number for an annual decision.</p></div>
+      <div class="step"><p><strong>Every row carries its caveat.</strong> The <code>caveat</code> column is the honesty layer - it travels with the number so no one forgets what the method cannot say.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>The best measurement teams pin a version of this table to the wall. When a stakeholder asks "what's our ROAS?" the answer is "which decision are you making?" - and the table routes them to the right method. That reframe alone prevents most attribution arguments.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>The reconciliation dashboard <span class="tag demo">★ 8 min · run it</span></h2>
+    </div>
+    <p class="lede">Put the three methods side by side for each channel. Where they agree, you have confidence. Where they diverge, you have your next investigation - or your next lift test.</p>
+    <div class="prompt-box good"><span class="label">Python · reconcile the three views</span>import pandas as pd
+import numpy as np
+
+# each channel's credit share under three methods (all sum to ~1 across channels)
+recon = pd.DataFrame({
+    "mta_dda":  {"paid_search": .34, "paid_social": .18, "display": .06, "ctv": .04},
+    "mmm":      {"paid_search": .22, "paid_social": .29, "display": .11, "ctv": .13},
+    "lift":     {"paid_search": .19, "paid_social": .31, "display": np.nan, "ctv": .15},
+}).round(2)
+
+# agreement score = 1 - spread across the methods we DO have for each channel
+def agreement(row):
+    vals = row.dropna()
+    return round(1 - (vals.max() - vals.min()), 2)
+
+recon["agree"] = recon.apply(agreement, axis=1)
+recon["flag"] = np.where(recon["agree"] &lt; 0.85, "investigate", "confident")
+
+print(recon)
+# paid_social: MMM + lift both say ~0.30, MTA under-credits it -> trust the causal read
+# paid_search: MTA over-credits (last-click bias); MMM + lift agree it is smaller</div>
+    <div class="steps">
+      <div class="step"><p><strong>Three columns, one channel per row.</strong> The dashboard's job is not to average the methods - it is to <em>surface the disagreement</em>, which is where the learning is.</p></div>
+      <div class="step"><p><strong>Where they agree, ship it.</strong> When MMM and lift both land near 0.30 for paid social, that is a calibrated, near-causal number - act on it with confidence.</p></div>
+      <div class="step"><p><strong>Where they diverge, route it.</strong> Paid search high on MTA but low on MMM and lift is the classic last-click bias - the disagreement itself is the finding, and it tells you what to test next.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>Agreement is the real KPI</strong>
+      A single fancy attribution number invites false confidence. Three methods and an agreement score invite the right question - "why do these disagree?" - which is how a measurement stack actually gets smarter over time.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>The pitfalls audit on your own stack <span class="tag demo">★ 7 min · run it</span></h2>
+    </div>
+    <p class="lede">Turn the eleven pitfalls into a runnable checklist. Score your own stack, and let the failures become your roadmap.</p>
+    <div class="prompt-box good"><span class="label">Python · self-audit</span>pitfalls = {
+    "heuristics_called_data_driven": False,
+    "last_touch_is_default_truth":   True,   # <- Lumen's old dashboard
+    "correlation_reported_as_causal": True,  # <- MMM shown without caveat
+    "markov_not_normalized":         False,
+    "exact_shapley_too_slow":        False,
+    "attribution_window_undocumented": True,  # <- nobody knows the lookback
+    "mta_missing_touches_ignored":   True,   # <- reported as complete
+    "double_counting_across_tools":  True,   # <- GA4 + ads + MMM all claim it
+    "view_vs_click_not_split":       False,
+    "mmm_not_lift_calibrated":       True,   # <- no experiments feeding priors
+    "deep_model_overfit_sparse":     False,
+}
+
+open_risks = [name for name, tripped in pitfalls.items() if tripped]
+score = 1 - len(open_risks) / len(pitfalls)
+print(f"stack health: {score:.0%}  ({len(open_risks)} open risks)")
+for r in open_risks:
+    print(" - fix:", r)</div>
+    <div class="steps">
+      <div class="step"><p><strong>Be honest in the booleans.</strong> The audit only works if you mark the pitfalls you are actually committing. Optimistic scoring defeats the purpose.</p></div>
+      <div class="step"><p><strong>The open risks are your backlog.</strong> Each <code>True</code> is a concrete engineering or process fix - documenting a window, adding a lift test, reconciling double-counts.</p></div>
+      <div class="step"><p><strong>Re-run it quarterly.</strong> Stack health is not a one-time score. As you close risks and add methods, the audit tracks whether your system is getting more defensible or just more complex.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>Most real 2026 stacks score somewhere around 50-60% on first audit - and the two risks that hurt most are almost always "MMM not lift-calibrated" and "correlation reported as causal." Fix those two and you have leapfrogged the majority of marketing measurement programs.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">After the course</span>
+      <h2>Ship it <span class="tag exercise">◐ 60 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Write your own measurement plan.</strong> Take Build-along 1 and replace Lumen's questions with your organization's real ones. One page, question-first, cadence and caveat on every row.</li>
+      <li><strong>Build a real reconciliation view.</strong> Even with two methods (say GA4 DDA + a simple MMM), stand up the agreement dashboard from Build-along 2 for your top five channels.</li>
+      <li><strong>Run the audit for real.</strong> Score your actual stack against the eleven pitfalls. Turn the open risks into a prioritized backlog - fix "not lift-calibrated" and "reported as causal" first.</li>
+      <li><strong>Optional capstone:</strong> assemble everything from B1-B10 into a single notebook - SQL journeys → heuristics → Markov/Shapley → MMM → geo-lift → reconciliation - as your portfolio proof you can build the whole loop.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · The unified 2026 stack is best described as...</p>
+      <button class="qopt" type="button">A · Picking the single most accurate attribution model and using only that</button>
+      <button class="qopt" type="button">B · MMM as the strategic anchor + incrementality for causal calibration + DDA/MTA for daily tactics - a loop</button>
+      <button class="qopt" type="button">C · Averaging every model's output into one number</button>
+      <p class="qwhy">No single tool is the truth. MMM sets the budget, lift tests calibrate it causally, and modeled attribution steers tactics - each feeding the next in a loop. The disagreement between them is a feature, not a bug.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · In this whole stack, which methods are causal?</p>
+      <button class="qopt" type="button">A · MMM, because it is Bayesian</button>
+      <button class="qopt" type="button">B · DDA, because Google built it</button>
+      <button class="qopt" type="button">C · Only the experiments - geo-lift and holdout RCTs. Everything else is correlational</button>
+      <p class="qwhy">MTA, Markov, Shapley and MMM all describe correlation. Only incrementality experiments withhold a channel and measure the delta, which is why lift is the causal anchor the rest of the stack gets calibrated against.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Name a top pitfall that breaks real attribution stacks.</p>
+      <button class="qopt" type="button">A · Not normalizing Markov removal effects (or double-counting the same conversion across GA4, ad platforms and MMM)</button>
+      <button class="qopt" type="button">B · Using Python instead of R</button>
+      <button class="qopt" type="button">C · Running tests for too long</button>
+      <p class="qwhy">Markov removal effects do not sum to 1 - skip the normalization and credit leaks. And GA4, the ad platforms and MMM will each claim the same sale unless you reconcile to one governed number. Both are on the eleven-pitfall checklist.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This capstone synthesizes the entire builder track - every method from B1 to B9 - into one orchestrated, auditable stack. It is the integration layer no single course teaches, drawn from the whole source universe of this program.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Synthesis of Builder Sessions 1-9</span><span class="note">SQL → heuristics → Markov/Shapley → ML → GA4 → MMM → lift - the whole loop</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The 2026 cookieless reality (industry)</span><span class="note">why MMM + lift resurged - Part 2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Attribution pitfalls (research synthesis)</span><span class="note">the eleven-pitfall audit - Part 3, Build-along 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Production orchestration (Airflow / dbt)</span><span class="note">named as the deployment path, not built here</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Vendor certificates</span><span class="note">GA4, Meta Blueprint badges stay with their official sources</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 10 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The unified stack =</b><span>MMM anchor (strategic budget) + incrementality (causal calibration) + DDA/MTA (daily tactics). A calibrated loop, not one tool.</span></div>
+      <div class="cheat-item"><b>Match method to decision</b><span>MMM quarterly, lift a few times a year, MTA daily. Never use a daily number to set an annual budget.</span></div>
+      <div class="cheat-item"><b>2026 privacy reality</b><span>Cookies partly survived Chrome but MTA still misses 30-60% (Safari/Firefox/ATT/SKAN). MMM + lift = privacy-proof.</span></div>
+      <div class="cheat-item"><b>Only experiments are causal</b><span>MTA, Markov, Shapley, MMM are correlational. Lift is the ground truth that calibrates the rest.</span></div>
+      <div class="cheat-item"><b>Reconcile, do not average</b><span>Put the three methods side by side. Agreement = confidence; disagreement = your next investigation or lift test.</span></div>
+      <div class="cheat-item"><b>Top pitfalls</b><span>Not normalizing Markov · double-counting across tools · MMM without lift calibration · correlation dressed as causal. Audit quarterly.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 10 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b9-incrementality-geo-lift.html">← Prev: Incrementality and geo-lift</a></span>
+    <span><a href="../index.html">← All sessions</a> &nbsp;·&nbsp; <a href="a1-the-credit-problem.html">Leader track →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

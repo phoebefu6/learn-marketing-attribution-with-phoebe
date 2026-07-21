@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 3 · Data-driven attribution, decoded - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Leader session 3 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Leader session 3 of 6</div>
+    <h1>Data-driven attribution, <span class="accent">decoded</span></h1>
+    <p class="sub">Markov. Shapley. GA4's black box. These are the models that finally stop guessing and read credit off your actual journeys - and the ones your vendors wave around to sound sophisticated. This session decodes the two big ideas behind them - the removal effect and fair-share marginal contribution - in plain language, no math, and hands you the three questions that puncture any "data-driven" claim. Because smarter is not the same as ground truth.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Leaders · CMO / CDAIO</span>
+      <span class="chip audience">No tech required</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-22 · Markov &amp; Shapley</span>
+      <span class="a3" style="flex:4">22-40 · DDA &amp; the 3 questions</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why leave the heuristics behind</h2>
+    </div>
+    <p class="lede">Last session ended on a ceiling: every heuristic is a fixed rule with a knob a human turned. If the webinar in your funnel is really worth 45%, no heuristic will ever find that out - it has no way to read your data. <strong>Data-driven attribution</strong> breaks that ceiling. Instead of asserting the weights, it learns them from the whole population of journeys. Two ideas do almost all the work - the <em>removal effect</em> (Markov) and <em>fair-share marginal contribution</em> (Shapley). You do not need the math. You need to understand what question each one asks, and where each one still falls short. Because "learned from data" and "true" are not the same thing.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Work-along - everyone does it</span>
+      <span class="pill inkpill">The brand: Lumen Skincare</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A plain-language grip on the two ideas behind every "AI attribution" pitch - the removal effect and marginal contribution - plus three questions that will tell you, in any meeting, whether a data-driven number is trustworthy or a black box being sold as ground truth.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: MARKOV ============ -->
+  <section class="section" id="markov">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the removal-effect idea</span>
+      <h2>Markov: what happens if we remove this channel? <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">The Markov idea is disarmingly simple. Picture every customer journey as a walk between states - Start, then each channel, ending at either Convert or "Null" (left without buying). Across all your journeys, you can measure how often each move happens. Then you ask the one question that gives Markov its power: <strong>if we deleted this channel entirely, how much would conversion drop?</strong> That drop is the channel's credit.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A Markov state diagram: Start flows through channel states to Convert or Null, with a callout showing that removing a channel drops the conversion rate">
+        <style>
+          .mkT { font: 700 12.5px Inter, sans-serif; fill: #FFFFFF; }
+          .mkI { font: 700 12.5px Inter, sans-serif; fill: #10201E; }
+          .mkX { font: 400 11.5px Inter, sans-serif; fill: #5B7671; }
+          .mkF { font: 700 12px Inter, sans-serif; fill: #F97316; }
+          .mkA { stroke: #B9D6D0; stroke-width: 2; fill: none; marker-end: url(#mkAh); }
+          .mkR { stroke: #F97316; stroke-width: 2; fill: none; stroke-dasharray: 5 4; marker-end: url(#mkRh); }
+        </style>
+        <defs>
+          <marker id="mkAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.5"/>
+          </marker>
+          <marker id="mkRh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#F97316" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- Start -->
+        <rect x="16" y="120" width="96" height="48" rx="11" fill="#10201E"/>
+        <text class="mkT" x="42" y="149">Start</text>
+        <!-- channel states -->
+        <rect x="180" y="40" width="130" height="44" rx="11" fill="#0B4A45"/>
+        <text class="mkT" x="200" y="67">Display</text>
+        <rect x="180" y="120" width="130" height="44" rx="11" fill="#0F766E"/>
+        <text class="mkT" x="200" y="147">Paid social</text>
+        <rect x="180" y="200" width="130" height="44" rx="11" fill="#2A9D8F"/>
+        <text class="mkT" x="200" y="227">Email</text>
+        <rect x="380" y="120" width="130" height="44" rx="11" fill="#14B8A6"/>
+        <text class="mkT" x="400" y="147">Paid search</text>
+        <!-- end states -->
+        <rect x="600" y="70" width="130" height="48" rx="11" fill="#0B4A45"/>
+        <text class="mkT" x="626" y="99">✅ Convert</text>
+        <rect x="600" y="180" width="130" height="48" rx="11" fill="#5B7671"/>
+        <text class="mkT" x="640" y="209">Null</text>
+        <!-- arrows Start->channels -->
+        <line class="mkA" x1="112" y1="138" x2="178" y2="70"/>
+        <line class="mkA" x1="112" y1="144" x2="178" y2="142"/>
+        <line class="mkA" x1="112" y1="150" x2="178" y2="216"/>
+        <!-- channels -> paid search -->
+        <line class="mkA" x1="310" y1="66" x2="378" y2="132"/>
+        <line class="mkA" x1="310" y1="142" x2="378" y2="142"/>
+        <line class="mkA" x1="310" y1="220" x2="378" y2="152"/>
+        <!-- paid search -> convert / null -->
+        <line class="mkA" x1="510" y1="134" x2="598" y2="98"/>
+        <line class="mkA" x1="510" y1="150" x2="598" y2="200"/>
+        <!-- removal callout on paid social -->
+        <line class="mkR" x1="245" y1="120" x2="245" y2="96"/>
+        <text class="mkF" x="150" y="288">✂ Remove paid social from every path...</text>
+        <text class="mkF" x="470" y="288">...conversion drops 34%. That drop = its credit.</text>
+        <text class="mkX" x="16" y="312">Credit is the conversion you would lose without the channel. Removal effects do NOT sum to 1 - they must be normalized before you read them as shares.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - Markov: credit is the conversion you would lose if the channel vanished</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The removal effect, in one plain sentence<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Markov gives the most credit to the channels whose <strong>absence would collapse conversion</strong>. Delete a channel from every journey, re-measure the conversion rate, and the size of the drop is that channel's importance. A channel nobody misses gets little; a channel that quietly holds the funnel together gets a lot - even if it never grabs the last click.</p>
+        <ul>
+          <li><strong>It reads the whole population, not one path.</strong> Unlike a heuristic, Markov does not split <em>this</em> $92 journey - it learns from all of Lumen's journeys at once what each channel is worth.</li>
+          <li><strong>It rewards the connectors.</strong> On Lumen's data, paid social and email often score high on removal effect - they are the touches that keep people moving toward the purchase, even though last-touch handed them almost nothing.</li>
+          <li><strong>Critical caveat: removal effects do not sum to 1.</strong> Each is measured independently, so they must be <strong>normalized</strong> before you read them as budget shares. A vendor showing raw removal effects that add up to 130% is showing you an un-normalized model.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A retailer ran the removal effect and found their email channel - dead last under last-touch - was the single biggest drop when removed. Pulling email out of the journey cost more conversions than pulling out paid search. They had been about to cut the email team. Removal effect saved the channel, because it measured what was <em>lost</em> in its absence, not what showed up at the finish line.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: SHAPLEY ============ -->
+  <section class="section" id="shapley">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the fair-share idea</span>
+      <h2>Shapley: everyone's fair average contribution <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Shapley comes from game theory - Lloyd Shapley, 1953 - and it answers a fairness question: if channels are teammates cooperating to win a conversion, what is each one's fair share of the prize? The answer is each channel's <strong>average marginal contribution</strong>: across every possible order the team could have formed, how much did adding this channel move the result?</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Shapley concept: channels join a team one at a time in different orders, each adding a marginal contribution, with a note that synergy between channels is shared fairly">
+        <style>
+          .spT { font: 700 12px Inter, sans-serif; fill: #FFFFFF; }
+          .spI { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .spX { font: 400 11.5px Inter, sans-serif; fill: #5B7671; }
+          .spL { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .spF { font: 700 12px Inter, sans-serif; fill: #F97316; }
+          .spP { font: 700 11px Inter, sans-serif; fill: #5B7671; }
+          .spA { stroke: #B9D6D0; stroke-width: 2; fill: none; marker-end: url(#spAh); }
+        </style>
+        <defs>
+          <marker id="spAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <!-- coalition row 1 -->
+        <text class="spP" x="16" y="58">Order A</text>
+        <rect x="90" y="42" width="96" height="34" rx="9" fill="#0B4A45"/>
+        <text class="spT" x="108" y="64">Display</text>
+        <text class="spL" x="196" y="64">+$14</text>
+        <line class="spA" x1="250" y1="59" x2="290" y2="59"/>
+        <rect x="296" y="42" width="96" height="34" rx="9" fill="#0F766E"/>
+        <text class="spT" x="308" y="64">P.social</text>
+        <text class="spL" x="402" y="64">+$41</text>
+        <line class="spA" x1="456" y1="59" x2="496" y2="59"/>
+        <rect x="502" y="42" width="96" height="34" rx="9" fill="#14B8A6"/>
+        <text class="spI" x="516" y="64">P.search</text>
+        <text class="spL" x="608" y="64">+$37</text>
+        <!-- coalition row 2 (different order) -->
+        <text class="spP" x="16" y="120">Order B</text>
+        <rect x="90" y="104" width="96" height="34" rx="9" fill="#14B8A6"/>
+        <text class="spI" x="104" y="126">P.search</text>
+        <text class="spL" x="196" y="126">+$60</text>
+        <line class="spA" x1="250" y1="121" x2="290" y2="121"/>
+        <rect x="296" y="104" width="96" height="34" rx="9" fill="#0B4A45"/>
+        <text class="spT" x="314" y="126">Display</text>
+        <text class="spL" x="402" y="126">+$9</text>
+        <line class="spA" x1="456" y1="121" x2="496" y2="121"/>
+        <rect x="502" y="104" width="96" height="34" rx="9" fill="#0F766E"/>
+        <text class="spT" x="514" y="126">P.social</text>
+        <text class="spL" x="608" y="126">+$23</text>
+        <!-- average bracket -->
+        <text class="spF" x="16" y="182">Average each channel's added value over ALL orders → its fair Shapley credit</text>
+        <!-- fair shares bar -->
+        <rect x="90" y="196" width="150" height="26" rx="5" fill="#0B4A45"/>
+        <text class="spT" x="110" y="214">Display</text>
+        <rect x="240" y="196" width="330" height="26" fill="#0F766E"/>
+        <text class="spT" x="360" y="214">Paid social</text>
+        <rect x="570" y="196" width="270" height="26" rx="5" fill="#14B8A6"/>
+        <text class="spT" x="660" y="214">Paid search</text>
+        <!-- synergy note -->
+        <rect x="90" y="248" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="spX" x="112" y="259" style="fill:#10201E">Shares synergy: if two channels together beat their solo sum, the surplus is split between them - nobody hogs the joint win.</text>
+        <rect x="90" y="276" width="14" height="14" rx="3" fill="#0F766E"/>
+        <text class="spX" x="112" y="287" style="fill:#10201E">The "fair" model: efficiency, symmetry, null-player, additivity. Shares always sum to the full conversion value.</text>
+        <text class="spX" x="90" y="312" style="fill:#5B7671">Exact Shapley cost is O(2^n) - fine for ~10-15 channels; beyond that, teams approximate it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - Shapley: each channel's fair share is its average added value across every ordering</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Marginal contribution and shared synergy<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The mechanic in one line: line the channels up in every possible order, and each time a channel joins, note how much it <em>added</em> to the result so far. Average those additions over all orderings - that average is the channel's Shapley credit.</p>
+        <ul>
+          <li><strong>It is provably "fair".</strong> Shapley is the only credit split that satisfies four common-sense axioms at once - efficiency (shares sum to the whole), symmetry (equal channels get equal credit), null-player (a useless channel gets zero), and additivity. That is why it is the reference standard for fairness.</li>
+          <li><strong>It shares synergy.</strong> If display and social together drive more than the sum of what each does alone, that surplus gets split between them - neither one hogs the joint win. Heuristics cannot do this; they have no concept of two channels lifting each other.</li>
+          <li><strong>The cost is the catch.</strong> Exact Shapley is <code>O(2^n)</code> - it considers every subset of channels. Fine for the ~10-15 channels most brands run; beyond that, teams switch to Monte-Carlo approximations. For Lumen's nine channels, exact Shapley is comfortable.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>How to hold Markov vs Shapley in your head</strong>
+          Markov asks "what breaks if this channel disappears?" Shapley asks "what does this channel add, on average, to every team it could join?" Both learn from your data, both reward the channels heuristics ignore - and both are still correlational, not proof of cause. Keep that last part close.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: GA4 DDA + BLACK BOX ============ -->
+  <section class="section" id="ga4-dda">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · data-driven in the wild</span>
+      <h2>GA4 DDA, and the black-box warning <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">You may never run Markov or Shapley yourself - but you almost certainly already use a data-driven model, because Google made it the GA4 default. GA4's Data-Driven Attribution (DDA) is Shapley-based with a time-decay element, and Google removed the old rules-based models from GA4 reporting entirely. It is powerful. It is also a black box - and that combination is exactly where leaders get fooled.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GA4 DDA takes Google-observable touches into a black box and outputs per-channel credit, with a caveat band listing what it cannot see">
+        <style>
+          .ddT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .ddS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity: .92; }
+          .ddI { font: 700 12px Inter, sans-serif; fill: #10201E; }
+          .ddX { font: 400 11.5px Inter, sans-serif; fill: #5B7671; }
+          .ddF { font: 700 12px Inter, sans-serif; fill: #F97316; }
+          .ddA { stroke: #B9D6D0; stroke-width: 2.5; fill: none; marker-end: url(#ddAh); }
+        </style>
+        <defs>
+          <marker id="ddAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#B9D6D0" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <!-- inputs -->
+        <rect x="16" y="60" width="180" height="120" rx="12" fill="#0F766E"/>
+        <text class="ddT" x="34" y="86">Inputs it can see</text>
+        <text class="ddS" x="34" y="110">Google-observable</text>
+        <text class="ddS" x="34" y="128">Consented touches</text>
+        <text class="ddS" x="34" y="146">Web + app only</text>
+        <text class="ddS" x="34" y="164">Last 50 interactions</text>
+        <!-- black box -->
+        <rect x="330" y="60" width="200" height="120" rx="12" fill="#10201E"/>
+        <text class="ddT" x="356" y="106">⬛ Black box</text>
+        <text class="ddS" x="356" y="128">Shapley + time-decay</text>
+        <text class="ddS" x="356" y="146">90-day lookback</text>
+        <text class="ddS" x="356" y="164">Weights not exposed</text>
+        <!-- output -->
+        <rect x="664" y="60" width="200" height="120" rx="12" fill="#14B8A6"/>
+        <text class="ddI" x="684" y="86">Per-channel credit</text>
+        <text class="ddX" x="684" y="110" style="fill:#10201E">A number per channel</text>
+        <text class="ddX" x="684" y="128" style="fill:#10201E">No model shown</text>
+        <text class="ddX" x="684" y="146" style="fill:#10201E">No per-touch weights</text>
+        <text class="ddX" x="684" y="164" style="fill:#10201E">Take it or leave it</text>
+        <line class="ddA" x1="196" y1="120" x2="328" y2="120"/>
+        <line class="ddA" x1="530" y1="120" x2="662" y2="120"/>
+        <!-- caveat band -->
+        <rect x="16" y="214" width="848" height="66" rx="10" fill="#FFF3EA" stroke="#F97316" stroke-width="1.5"/>
+        <text class="ddF" x="34" y="240">⚠ What DDA cannot see - and will never tell you it missed</text>
+        <text class="ddX" x="34" y="262" style="fill:#10201E">Non-Google channels · unconsented users · offline touches · CTV/print/word-of-mouth · the full cross-channel journey. It is not ground truth - it is one vendor's partial, unexplained view.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - GA4 DDA: a powerful model that only sees part of the journey and never shows its work</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why "data-driven" is not the same as "true"<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>DDA is a genuine upgrade over last-touch. But two properties should keep you cautious every time you read one.</p>
+        <ul>
+          <li><strong>It is a black box.</strong> Google does not expose the model or the per-channel weights. You get a number and no way to audit how it was produced. You cannot ask it "why did display get 8%?" and get an answer.</li>
+          <li><strong>It only sees what Google can see.</strong> DDA works on Google-observable, consented, web-and-app touches - it defaults to the last 50 interactions with a 90-day lookback. Your influencer, your CTV, your offline, your unconsented visitors, and every non-Google channel are simply invisible to it. It is not modeling the journey; it is modeling the slice of the journey Google happened to witness.</li>
+          <li><strong>It is still correlational.</strong> Like Markov and Shapley, DDA finds channels that <em>correlate</em> with conversion. It cannot prove any channel <em>caused</em> it. Only incrementality experiments do that - Sessions 4 and 5.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A CMO presented GA4 DDA numbers to the board as "the truth, finally - it's AI". A sharp director asked one question: "Does it include our CTV spend?" It did not - CTV is not a Google-observable web touch, so DDA never saw it. Half the media budget was invisible to the model being sold as ground truth. The number was not wrong; it was answering a smaller question than the room assumed.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The family tree: heuristic → learned → causal<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Model</th><th>Core idea</th><th>Still just correlation?</th></tr></thead>
+          <tbody>
+            <tr><td>Markov</td><td>Removal effect - what conversion you'd lose without it</td><td>Yes - correlational</td></tr>
+            <tr><td>Shapley</td><td>Average marginal contribution, fairly shared</td><td>Yes - correlational</td></tr>
+            <tr><td>GA4 DDA</td><td>Shapley + time-decay, on Google-observable touches</td><td>Yes - correlational + partial view</td></tr>
+            <tr><td>Incrementality (Session 4-5)</td><td>Randomized holdout / geo experiment</td><td>No - this one is causal</td></tr>
+          </tbody>
+        </table>
+        <p>Data-driven is a real step up from heuristics - it learns instead of asserting. But it is still standing on correlation. The jump to causation needs an experiment, not a smarter split. That is the whole next arc of the course.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ WORK-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 1 of 2</span>
+      <h2>Read a data-driven report - and ask the three black-box questions <span class="tag demo">★ 10 min · on your reports</span></h2>
+    </div>
+    <p class="lede">No math. We put a data-driven attribution report on screen - Lumen's GA4 DDA output - and practice the three questions that puncture any "it's AI, trust it" claim. These three questions are the entire leader skill for this session.</p>
+    <div class="steps">
+      <div class="step"><p><strong>Question 1 - What window?</strong> Ask what lookback and interaction limit the model uses. Lumen's DDA defaults to a 90-day lookback and the last 50 interactions. A journey that started 100 days ago, or the 51st touch back, is invisible. If your real cycle is longer than the window, the model is cropping your journeys.</p></div>
+      <div class="step"><p><strong>Question 2 - What touches can it see?</strong> Ask which channels the model actually observes. DDA sees Google-observable, consented, web-and-app touches only. For Lumen that means influencer, CTV, and offline are missing entirely. Name every channel the model is blind to.</p></div>
+      <div class="step"><p><strong>Question 3 - Can you see the weights?</strong> Ask to see the per-channel model, not just the output. With GA4 DDA the answer is no - it is a black box. That is not a dealbreaker, but it means you cannot audit <em>why</em> a channel got its credit, so you treat the number as an informed opinion, not a proof.</p></div>
+      <div class="step"><p>Write the verdict: "This is a data-driven model, which beats last-touch - but it runs a 90-day window, is blind to CTV and influencer, and won't show its weights. I'll use it for direction, not as the final word on budget."</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>The move that earns respect</strong>
+      Memorize the three questions - what window, what touches, can I see the weights. Asking them turns "the AI says paid search wins" into a conversation about what the model can and cannot know. A leader who asks them cannot be sold a black box as ground truth.
+    </div>
+  </section>
+
+  <!-- ============ WORK-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Work-along 2 of 2</span>
+      <h2>When is data-driven worth it - and when is it overkill? <span class="tag demo">★ 10 min · pen and paper</span></h2>
+    </div>
+    <p class="lede">Data-driven is not automatically the right choice. It needs volume, a real multi-touch journey, and a decision big enough to justify it. Decide, out loud, when Lumen should reach for it and when a heuristic is honestly good enough.</p>
+    <div class="steps">
+      <div class="step"><p>Take a <strong>low-volume, short-path</strong> case - a new Lumen product with 40 conversions a month, mostly one-touch. Is Markov/Shapley worth it? (No - there is not enough journey data to learn from, and barely a path to split. A simple model is more honest here.)</p></div>
+      <div class="step"><p>Take a <strong>high-volume, multi-touch</strong> case - Lumen's core serum line, thousands of 5-touch journeys a month across nine channels. Worth it? (Yes - this is exactly where learned credit beats a fixed rule, because the interactions between channels are real and measurable.)</p></div>
+      <div class="step"><p>Take a <strong>strategic budget</strong> case - reallocating the $4M media budget. Is data-driven <em>enough</em>? (No - it is better than a heuristic, but it is still correlational. A budget of that size needs an incrementality test on top. That is the honest limit of everything in this session.)</p></div>
+      <div class="step"><p>Write your rule of thumb: data-driven attribution earns its complexity when you have <strong>volume, genuine multi-touch journeys, and a decision worth the effort</strong> - and even then, it informs the budget rather than deciding it.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>A team spent three months standing up a Shapley model for a product line that got 30 conversions a month. The model's outputs swung wildly week to week because there was not enough data to stabilize them - and they made real budget cuts on the noise. Sophistication without volume is not rigor; it is expensive guessing with a fancier label.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 4</span>
+      <h2>This week <span class="tag exercise">◐ 25 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Run the three questions on a real report.</strong> Take your own GA4 or vendor data-driven report and answer, in writing: what window, what touches can it see, can you see the weights? Bring the answers to Session 4.</li>
+      <li><strong>Find your model's blind channels.</strong> List every channel your data-driven model cannot observe - offline, CTV, unconsented, non-Google. That list is the size of your measurement gap.</li>
+      <li><strong>Catch a "true" claim.</strong> Find one place someone treats a data-driven number as ground truth. Write the one-sentence correction: "It's learned, not proven - it's still correlational."</li>
+      <li><strong>Optional:</strong> read Google's GA4 Data-Driven Attribution help doc (Skillshop) - note where it says the model and weights are not exposed. That sentence is the black box, in Google's own words.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · In Markov attribution, the "removal effect" measures...</p>
+      <button class="qopt" type="button">A · How much a channel costs to remove from the media plan</button>
+      <button class="qopt" type="button">B · How much conversion drops if you delete that channel from every journey</button>
+      <button class="qopt" type="button">C · How recently the channel was touched</button>
+      <p class="qwhy">Removal effect = the conversion you would lose without the channel. Channels whose absence collapses conversion get the most credit - and the raw effects must be normalized, since they do not sum to 1.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · What makes Shapley value attribution distinctive among the models?</p>
+      <button class="qopt" type="button">A · It gives 100% of credit to the last touch</button>
+      <button class="qopt" type="button">B · It is a fixed rule you set by hand</button>
+      <button class="qopt" type="button">C · It fairly shares the synergy between channels - the surplus when two channels beat their solo sum</button>
+      <p class="qwhy">Shapley averages each channel's marginal contribution across all orderings and splits joint synergy between the channels that created it. Heuristics have no concept of channels lifting each other.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · A director says "GA4 DDA is AI, so it's the true attribution". Your correction?</p>
+      <button class="qopt" type="button">A · It's a black box that only sees Google-observable, consented touches - it's a partial, correlational view, not ground truth</button>
+      <button class="qopt" type="button">B · Correct - data-driven models measure true causation</button>
+      <button class="qopt" type="button">C · It's the same as last-touch</button>
+      <p class="qwhy">DDA does not expose its model or weights, and it only sees Google-observable web/app touches - so CTV, offline, influencer, and non-Google channels are invisible. It is a better opinion than last-touch, still correlational, and far from ground truth.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session distills the data-driven-attribution chapter of the leading courses into leader-first concepts - the removal effect, fair-share marginal contribution, and the GA4 black box - without any math derivation. Certificates and full video courses stay with their official sources.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Marketing Attribution and Mix Modeling (LinkedIn Learning) - ch.3</span><span class="note">Markov removal effect + Shapley fairness, conceptually - Parts 1-2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Google Analytics Data-Driven Attribution (Skillshop / GA4 docs)</span><span class="note">DDA as configured, the black-box caveat - Part 3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">The math of Markov &amp; Shapley from scratch</span><span class="note">built in Python in Builder Sessions 4-5</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">MMM vs MTA vs incrementality</span><span class="note">the same question three ways in Leader Session 4</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Causation via holdout / geo experiments</span><span class="note">the causal jump in Leader Session 5</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader Session 3 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Data-driven =</b><span>Credit learned from the whole population of journeys, not asserted by a fixed rule. It reads the weights off your data.</span></div>
+      <div class="cheat-item"><b>Markov · removal effect</b><span>Credit = the conversion you'd lose if the channel vanished. Rewards connectors. Raw effects don't sum to 1 - normalize them.</span></div>
+      <div class="cheat-item"><b>Shapley · fair share</b><span>Each channel's average marginal contribution across all orderings. Shares synergy fairly. Exact cost O(2^n) - fine for ~10-15 channels.</span></div>
+      <div class="cheat-item"><b>GA4 DDA</b><span>The GA4 default. Shapley + time-decay, 90-day lookback, last 50 interactions. A black box - model and weights not exposed.</span></div>
+      <div class="cheat-item"><b>The three questions</b><span>What window? What touches can it see? Can you see the weights? Ask all three of any data-driven report.</span></div>
+      <div class="cheat-item"><b>Still correlational</b><span>Markov, Shapley, and DDA all find correlation, not cause. Only incrementality experiments prove causation - Sessions 4-5.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 3 of 6 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a2-heuristic-models.html">← Prev: The heuristics you already use</a> &nbsp;·&nbsp; <a href="a4-mmm-mta-incrementality.html">Next: MMM vs MTA vs incrementality →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

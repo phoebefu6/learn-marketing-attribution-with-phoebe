@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 8 · Marketing Mix Modeling: adstock and saturation - learn marketing attribution with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-marketing-attribution-with-phoebe</a> / Builder session 8 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Marketing Attribution with Phoebe · Builder session 8 of 10</div>
+    <h1>Marketing Mix Modeling: <span class="accent">adstock and saturation</span></h1>
+    <p class="sub">Multi-touch attribution needs user identity - and in 2026 that identity is half gone. Marketing Mix Modeling sidesteps the whole problem: it regresses a weekly outcome KPI on aggregate channel spend, no cookies, no user IDs, nothing to lose to a browser update. But raw spend is a lie until you bend it two ways - adstock (an ad keeps working after it runs) and saturation (the tenth dollar buys less than the first). Today you build both transforms in numpy, fit a simple MMM on Lumen's spend_weekly table, and read a real budget-response curve off it.</p>
+    <div class="chip-row">
+      <span class="chip level" style="color:#F97316">🟠 Advanced</span>
+      <span class="chip audience">Builders</span>
+      <span class="chip audience">Meridian · PyMC</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-4 · Why MMM</span>
+      <span class="a2" style="flex:3">4-20 · Adstock + saturation</span>
+      <span class="a3" style="flex:5">20-40 · Build it on Lumen</span>
+      <span class="a4" style="flex:1">40-45 · Wrap</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why MMM, and why now</h2>
+    </div>
+    <p class="lede">Every model you have built so far - heuristics, Markov, Shapley, GA4 DDA - needs to follow a person across touches. That means a user identity, and in 2026 that identity leaks through Safari, Firefox, ATT and SKAN aggregation. Marketing Mix Modeling throws the person away on purpose. It works on <strong>aggregate weekly spend</strong> - one row per week per channel, two to three years deep - and asks a top-down question: as spend moved, how did revenue move? No identity means nothing to break. That is why MMM, a technique from the 1960s, came roaring back.</p>
+    <div class="legend">
+      <span class="pill solid">Live - built in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill amber">★ Build-along - run the code yourself</span>
+      <span class="pill inkpill">Table: Lumen spend_weekly</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A working numpy adstock function, a Hill saturation transform, a fitted MMM on Lumen's spend_weekly, and a response curve you can read as "the next dollar into paid social is worth this much" - the raw material every budget-optimization argument is built from.
+    </div>
+    <div class="callout tip">
+      <strong>The one idea under everything today</strong>
+      MMM never sees a customer. It only ever sees <em>weekly totals</em> - spend in, revenue out - so it is privacy-resilient by construction. The craft is entirely in how you transform spend before the regression sees it.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: ADSTOCK ============ -->
+  <section class="section" id="adstock">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the carryover transform</span>
+      <h2>Adstock: an ad keeps working after it runs <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Run a CTV burst this week and sales lift for weeks. That lag is <strong>adstock</strong> (carryover): the effect of spend decays across subsequent weeks rather than vanishing when the campaign ends. If you feed raw weekly spend into a regression you assume the effect dies the instant the week closes - which is false for every brand channel. Adstock spreads this week's spend forward before the model ever sees it.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A spend spike in week one decaying over following weeks, TV decays slowly, paid search fast">
+        <style>
+          .adkT { font: 700 14px Inter, sans-serif; fill: #10201E; }
+          .adkL { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .adkW { font: 700 11px Inter, sans-serif; fill: #FFFFFF; }
+          .adkN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .adkAx { stroke: #B9D6D0; stroke-width: 1.6; }
+        </style>
+        <text class="adkT" x="14" y="26">One $100k spend spike in week 1 - where does its effect land?</text>
+        <line class="adkAx" x1="70" y1="240" x2="820" y2="240"/>
+        <line class="adkAx" x1="70" y1="60" x2="70" y2="240"/>
+        <text class="adkL" x="30" y="66">effect</text>
+        <!-- TV/CTV slow decay theta 0.7 : bars -->
+        <rect x="90" y="90" width="46" height="150" rx="3" fill="#0B4A45"/>
+        <rect x="150" y="145" width="46" height="95" rx="3" fill="#0B4A45"/>
+        <rect x="210" y="180" width="46" height="60" rx="3" fill="#0B4A45"/>
+        <rect x="270" y="205" width="46" height="35" rx="3" fill="#0B4A45"/>
+        <rect x="330" y="220" width="46" height="20" rx="3" fill="#0B4A45"/>
+        <text class="adkW" x="99" y="110">wk1</text>
+        <text class="adkN" x="96" y="262">CTV · theta 0.7 (slow)</text>
+        <!-- paid search fast decay theta 0.1 : bars -->
+        <rect x="490" y="90" width="46" height="150" rx="3" fill="#14B8A6"/>
+        <rect x="550" y="222" width="46" height="18" rx="3" fill="#14B8A6"/>
+        <rect x="610" y="236" width="46" height="4" rx="2" fill="#14B8A6"/>
+        <text class="adkW" x="499" y="110" style="fill:#10201E">wk1</text>
+        <text class="adkN" x="486" y="262">Paid search · theta 0.1 (fast)</text>
+        <line class="adkAx" x1="430" y1="60" x2="430" y2="248" stroke-dasharray="4 4"/>
+        <rect x="90" y="278" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="adkL" x="112" y="289" style="fill:#10201E">One theta per channel. Brand/CTV carries for weeks; performance search is nearly spent the same week.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the same spike decays slowly for CTV, fast for paid search (geometric adstock, one theta each)</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Geometric vs Weibull adstock<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Two ways to shape the decay, from simple to flexible:</p>
+        <ul>
+          <li><strong>Geometric decay</strong> - one number per channel, <em>theta</em>, the fraction of last week's effect that carries into this week. High theta (0.7) = slow-burning brand media like CTV; low theta (0.1) = fast performance media like paid search. This is the workhorse and what you will code today.</li>
+          <li><strong>Weibull adstock</strong> - two parameters (shape and scale) that let the peak effect land <em>after</em> week zero and the tail bend how you like. More faithful for channels whose impact builds before it fades, at the cost of harder fitting. Meta Robyn uses Weibull; PyMC-Marketing offers both.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>A brand fed raw (un-adstocked) spend into a regression and concluded CTV "did nothing" - because the sales it drove showed up two and three weeks later, credited to whatever ran then. Adding a theta of 0.65 to CTV moved its estimated contribution from near-zero to the third-largest channel. Same data, one transform, opposite decision.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why carryover is not the same as saturation<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Keep these two separate in your head - they are the two independent transforms of MMM and they answer different questions:</p>
+        <ul>
+          <li><strong>Adstock is about <em>time</em>:</strong> where does this week's effect land - now, or spread across the next several weeks?</li>
+          <li><strong>Saturation is about <em>amount</em>:</strong> for a given week's effect, does doubling the spend double the response? (No - that is Part 2.)</li>
+        </ul>
+        <p>In a real MMM pipeline you apply them in order: adstock first (spread spend over time), then saturation (bend the response). Get the order backwards and the curves fight each other.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: SATURATION ============ -->
+  <section class="section" id="saturation">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · diminishing returns</span>
+      <h2>Saturation: the tenth dollar buys less than the first <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">No channel scales forever. The first $10k into paid social reaches your hottest prospects; the hundredth reaches people who would have bought anyway or never will. That bend is <strong>saturation</strong> (diminishing returns), and it is modeled with an S-shaped or concave curve - the <strong>Hill</strong> function, Michaelis-Menten, or a simple log transform. This curve is not a footnote: it <em>is</em> the budget-response curve, the thing that tells you where the next dollar should go.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A diminishing-returns response curve, spend on x, response on y, flattening past a saturation point">
+        <style>
+          .satT { font: 700 14px Inter, sans-serif; fill: #10201E; }
+          .satL { font: 600 11.5px Inter, sans-serif; fill: #5B7671; }
+          .satN { font: 700 11.5px Inter, sans-serif; fill: #10201E; }
+          .satAx { stroke: #B9D6D0; stroke-width: 1.6; }
+          .satC { stroke: #0F766E; stroke-width: 3.5; fill: none; }
+        </style>
+        <text class="satT" x="14" y="26">Response vs spend - the curve every budget decision reads from</text>
+        <line class="satAx" x1="80" y1="270" x2="830" y2="270"/>
+        <line class="satAx" x1="80" y1="60" x2="80" y2="270"/>
+        <text class="satL" x="40" y="70">response</text>
+        <text class="satL" x="760" y="292">spend →</text>
+        <!-- concave Hill curve -->
+        <path class="satC" d="M80,270 C 200,150 320,95 470,80 C 600,68 720,65 830,64"/>
+        <!-- efficient zone -->
+        <rect x="80" y="60" width="230" height="210" fill="#5EEAD4" opacity="0.18"/>
+        <text class="satN" x="95" y="250">efficient</text>
+        <text class="satL" x="95" y="266" style="fill:#10201E">steep = cheap wins</text>
+        <!-- saturation point -->
+        <circle cx="470" cy="80" r="6" fill="#F97316"/>
+        <line class="satAx" x1="470" y1="80" x2="470" y2="270" stroke-dasharray="4 4"/>
+        <text class="satN" x="410" y="52" style="fill:#F97316">saturation point</text>
+        <!-- wasted zone -->
+        <rect x="470" y="60" width="360" height="210" fill="#F97316" opacity="0.10"/>
+        <text class="satN" x="560" y="120">flat = wasted spend</text>
+        <text class="satL" x="560" y="138" style="fill:#10201E">next dollar barely moves response</text>
+        <rect x="80" y="298" width="14" height="14" rx="3" fill="#F97316"/>
+        <text class="satL" x="102" y="309" style="fill:#10201E">Doubling spend never doubles response. The marginal (slope) is what you optimize - shift dollars from flat channels to steep ones.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - a Hill saturation curve: steep and cheap early, flat and wasteful past the saturation point</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Hill, Michaelis-Menten, or log?<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Three common shapes, same idea (response rises then flattens):</p>
+        <table class="clean">
+          <thead><tr><th>Transform</th><th>Shape</th><th>When to reach for it</th></tr></thead>
+          <tbody>
+            <tr><td>Hill</td><td>Flexible S-curve (half-point + slope)</td><td>Default in Robyn &amp; Meridian; can be concave or S-shaped</td></tr>
+            <tr><td>Michaelis-Menten</td><td>Concave, one saturation constant</td><td>Simple diminishing returns, no S-bend needed</td></tr>
+            <tr><td>Log / power</td><td>Always concave</td><td>Quick on-ramp; least faithful at the extremes</td></tr>
+          </tbody>
+        </table>
+        <p>The Hill curve wins in practice because its two parameters (a half-saturation point and a slope) let it be gently concave for search and sharply S-shaped for a channel that needs a threshold of spend before anything happens.</p>
+        <div class="callout tip">
+          <strong>The read that matters</strong>
+          The slope of the saturation curve at your current spend is the <em>marginal return</em>. Optimize a budget by moving dollars off channels whose slope has flattened and onto channels still on the steep part. That single sentence is what MMM exists to enable.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The full MMM equation in one line<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Putting the pieces together, a channel's contribution to weekly revenue is roughly:</p>
+        <p><code>revenue_week = base + Σ_channel [ coef · saturate( adstock( spend ) ) ] + seasonality + noise</code></p>
+        <p>Read it right to left: take raw weekly spend, apply adstock (spread over time), apply saturation (bend for diminishing returns), multiply by a learned coefficient, sum across channels, add a baseline and seasonality. Everything today builds toward fitting exactly this - just with a simple linear estimator instead of a full Bayesian one.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: TOOLS ============ -->
+  <section class="section" id="tools">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the toolbox</span>
+      <h2>Robyn vs Meridian vs PyMC-Marketing <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">You could hand-roll everything (and today you partly will, to understand it), but production MMM runs on one of three tools. The dividing line is <strong>point estimates vs Bayesian uncertainty</strong>: does the tool hand you one number per channel, or a whole distribution with a credible interval?</p>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The three tools, and why Bayesian uncertainty matters<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Tool</th><th>Language / engine</th><th>What you get</th></tr></thead>
+          <tbody>
+            <tr><td>Meta Robyn</td><td>R · ridge regression + Nevergrad evolutionary search</td><td>Hill saturation + Weibull adstock; point estimates, many candidate models</td></tr>
+            <tr><td>Google Meridian</td><td>Python · TensorFlow-Probability, Bayesian MCMC</td><td>Estimates adstock + saturation inside the model; every parameter has an uncertainty interval; ingests reach &amp; frequency; calibrate with experiment priors</td></tr>
+            <tr><td>PyMC-Marketing</td><td>Python · PyMC, Bayesian</td><td>Full Bayesian MMM, geometric &amp; Weibull adstock, Hill/logistic saturation, priors you can set</td></tr>
+          </tbody>
+        </table>
+        <p>Robyn gives you a point estimate - "paid social contributed $1.2M". Meridian and PyMC-Marketing give you a <strong>distribution</strong> - "paid social contributed $1.2M, 90% credible interval $0.9M to $1.5M". For a budget decision that moves millions, the interval is the honest answer. It stops you from reallocating on noise.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>Google deprecated LightweightMMM in January 2025</strong> and pointed everyone to Meridian, its Bayesian successor. If you inherit an old LightweightMMM pipeline, the migration target is Meridian - do not build new work on the deprecated library.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Bayesian priors as the calibration hook<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The reason the Bayesian tools matter for this whole course: because every parameter is a distribution with a prior, you can <strong>inject outside knowledge as that prior</strong>. Ran a geo-lift experiment that measured paid social's true incremental effect? Feed that as a prior on paid social's coefficient and the MMM is now calibrated to a causal result instead of pure correlation. That is exactly the loop Session 9 builds. Robyn's point estimates cannot receive a prior the same way - another reason the field tilted Bayesian.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ BUILD-ALONG 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 1 of 3</span>
+      <h2>Prep spend_weekly + apply geometric adstock <span class="tag demo">★ 8 min · run it</span></h2>
+    </div>
+    <p class="lede">Load Lumen's aggregate MMM table, pivot it to a weekly spend matrix, and write the geometric adstock function by hand. Notice there is not a single customer_id in sight - this is the privacy-resilient part.</p>
+    <div class="prompt-box good"><span class="label">Python · adstock</span>import numpy as np
+import pandas as pd
+
+# Lumen's aggregate MMM table: one row per week x channel (no user identity)
+spend = pd.read_csv("lumen_spend_weekly.csv", parse_dates=["week"])
+
+# pivot to a weekly spend matrix: rows = weeks, columns = the 9 channels
+wide = (spend
+        .pivot_table(index="week", columns="channel",
+                     values="spend", aggfunc="sum")
+        .sort_index()
+        .fillna(0.0))
+
+def geometric_adstock(x, theta):
+    """Carryover: each week keeps a fraction theta of last week's effect."""
+    y = np.zeros(len(x))
+    y[0] = x[0]
+    for t in range(1, len(x)):
+        y[t] = x[t] + theta * y[t - 1]
+    return y
+
+# TV/CTV decays slowly (high theta), paid search fast (low theta)
+theta = {"ctv": 0.7, "display": 0.5, "paid_social": 0.4,
+         "email": 0.3, "organic_search": 0.2, "paid_search": 0.1}
+
+adstocked = wide.copy()
+for ch in wide.columns:
+    adstocked[ch] = geometric_adstock(wide[ch].values, theta.get(ch, 0.3))
+
+print(adstocked[["ctv", "paid_search"]].head())</div>
+    <div class="steps">
+      <div class="step"><p><strong>See the pivot.</strong> <code>wide</code> is a matrix of weeks by channels - the entire input to an MMM. Two to three years of these rows is all it needs. No journeys, no identity resolution, nothing a browser can revoke.</p></div>
+      <div class="step"><p><strong>Read the loop.</strong> Each week adds this week's spend plus <code>theta</code> times last week's carried effect. That single recurrence is geometric adstock - the whole thing.</p></div>
+      <div class="step"><p><strong>Compare the columns.</strong> Print CTV next to paid search and watch CTV's adstocked value stay elevated for weeks after a spike while paid search snaps back. That is the theta difference made visible.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>Sanity check</strong>
+      One theta per channel, always between 0 and 1. If a theta ever fits above 1 your effect grows forever - a bug, not a brand. Real tools bound it; your hand-rolled version should too.
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 2 of 3</span>
+      <h2>Hill saturation + fit a simple MMM <span class="tag demo">★ 8 min · run it</span></h2>
+    </div>
+    <p class="lede">Apply a Hill saturation transform on top of the adstocked spend, then fit a simple ridge regression of Lumen's weekly revenue on the transformed channels. This is a real (if minimal) MMM.</p>
+    <div class="prompt-box good"><span class="label">Python · saturation + fit</span>from sklearn.linear_model import Ridge
+
+def hill(x, half, slope=1.0):
+    """Diminishing returns: response saturates as spend grows.
+    half = spend at which we reach half of max response."""
+    xs = np.power(x, slope)
+    return xs / (xs + np.power(half, slope))
+
+# apply saturation on top of the adstocked spend (adstock first, then saturate)
+transformed = adstocked.copy()
+for ch in adstocked.columns:
+    positive = adstocked[ch][adstocked[ch] &gt; 0]
+    half = positive.median() if len(positive) else 1.0   # rough anchor
+    transformed[ch] = hill(adstocked[ch].values, half=half, slope=1.3)
+
+# weekly revenue is the outcome KPI - aggregate, no user identity
+weekly_rev = spend.groupby("week")["revenue"].sum().sort_index()
+X = transformed.loc[weekly_rev.index]
+
+# positive=True keeps channel contributions non-negative (spend cannot hurt)
+mmm = Ridge(alpha=1.0, positive=True).fit(X, weekly_rev)
+
+contrib = pd.Series(mmm.coef_, index=X.columns).sort_values(ascending=False)
+print(contrib.round(1))</div>
+    <div class="steps">
+      <div class="step"><p><strong>The Hill function.</strong> At low spend the response climbs fast; as spend passes <code>half</code>, each extra dollar returns less. Change <code>slope</code> to 2.0 and the curve becomes S-shaped (a spend threshold before liftoff).</p></div>
+      <div class="step"><p><strong>Order matters.</strong> Adstock ran first (Build-along 1), saturation second, regression third - the canonical MMM pipeline. Swap the first two and the transforms fight.</p></div>
+      <div class="step"><p><strong>Read the coefficients.</strong> <code>contrib</code> ranks channels by their fitted contribution to weekly revenue. On Lumen this typically lifts paid social and CTV above where last-touch ever put them - because MMM finally credits the carryover and the demand they create.</p></div>
+    </div>
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p>A minimal ridge MMM like this is a teaching model, not a board deck. Production MMM adds seasonality controls, price and promo variables, a baseline term, and - critically - uncertainty. But the shape of the argument is identical: transform spend, regress on the KPI, read the contributions. You just built the skeleton the real thing hangs on.</p>
+    </div>
+  </section>
+
+  <!-- ============ BUILD-ALONG 3 ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Build-along 3 of 3</span>
+      <h2>Response curve → a budget-optimization read <span class="tag demo">★ 7 min · run it</span></h2>
+    </div>
+    <p class="lede">The saturation curve for one channel, turned into the sentence a media planner actually wants: where is the next dollar worth the most? Then the note on why you would graduate this to Meridian or PyMC-Marketing.</p>
+    <div class="prompt-box good"><span class="label">Python · response curve</span># sweep a spend grid through the same transforms, for one channel
+ch = "paid_social"
+grid = np.linspace(0, wide[ch].max() * 1.5, 60)
+
+positive = adstocked[ch][adstocked[ch] &gt; 0]
+half = positive.median()
+coef = mmm.coef_[list(X.columns).index(ch)]
+
+# modeled response across the spend grid = the budget-response curve
+response = coef * hill(grid, half=half, slope=1.3)
+
+# marginal return = slope of the curve; invest where marginal is highest
+marginal = np.gradient(response, grid)
+knee = grid[np.argmax(marginal &lt; marginal.max() * 0.2)]
+
+print(f"{ch}: response flattens near ${knee:,.0f}/wk")
+print(f"current spend ${wide[ch].iloc[-1]:,.0f}/wk - "
+      f"{'room to grow' if wide[ch].iloc[-1] &lt; knee else 'past the knee, pull back'}")</div>
+    <div class="steps">
+      <div class="step"><p><strong>Build the curve.</strong> Push a grid of hypothetical spends through the exact same Hill transform and coefficient. The output is the response curve you saw in Part 2 - now a real array you can plot.</p></div>
+      <div class="step"><p><strong>Find the knee.</strong> The marginal (slope) tells you where returns flatten. Below the knee, add budget; past it, you are buying the flat part of the curve - reallocate.</p></div>
+      <div class="step"><p><strong>The budget read.</strong> Compare current spend to the knee for every channel and you have the first draft of a reallocation: pull from the saturated channels, push into the ones still climbing.</p></div>
+    </div>
+    <div class="callout tip">
+      <strong>Where this goes next - Meridian / PyMC-Marketing</strong>
+      Your knee is a single point estimate. In Meridian or PyMC-Marketing the response curve comes with a credible interval - a fan, not a line - so the read becomes "the knee is <em>probably</em> here, and here is how sure we are." And those priors are where Session 9's geo-lift results plug in to make the whole curve causal, not just correlational.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Before Session 9</span>
+      <h2>This week <span class="tag exercise">◐ 45 min total</span></h2>
+    </div>
+    <ul>
+      <li><strong>Sweep the theta.</strong> Re-run Build-along 1 for CTV with theta = 0.3, 0.5, 0.7 and plot the adstocked series. Feel how carryover reshapes the input before the model ever sees it.</li>
+      <li><strong>Bend the Hill.</strong> Re-run Build-along 2 with slope = 0.8, 1.3, and 2.5 for one channel and plot all three response curves on one axis - concave vs S-shaped.</li>
+      <li><strong>Read every knee.</strong> Extend Build-along 3 to loop over all nine channels and print current-spend-vs-knee for each. Which channels look saturated on Lumen?</li>
+      <li><strong>Optional:</strong> install <code>pymc-marketing</code> and fit its <code>MMM</code> class on the same <code>spend_weekly</code> data - your first Bayesian MMM with real credible intervals. Compare its channel ranking to your ridge model.</li>
+    </ul>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Adstock in an MMM models...</p>
+      <button class="qopt" type="button">A · Diminishing returns as spend grows within a week</button>
+      <button class="qopt" type="button">B · Carryover - an ad's effect decaying across subsequent weeks</button>
+      <button class="qopt" type="button">C · The cost per impression of a channel</button>
+      <p class="qwhy">Adstock is about time: this week's spend keeps working (decaying) over following weeks. Geometric adstock uses one theta per channel - high for slow-burn CTV, low for fast paid search.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · Saturation (the Hill curve) captures the fact that...</p>
+      <button class="qopt" type="button">A · Effects show up weeks after the spend</button>
+      <button class="qopt" type="button">B · Every channel scales linearly forever</button>
+      <button class="qopt" type="button">C · Doubling spend never doubles response - returns diminish</button>
+      <p class="qwhy">Saturation is about amount. The Hill / Michaelis-Menten / log curve bends over as spend grows, and its slope (the marginal return) is exactly what you optimize a budget against.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · You inherit a LightweightMMM pipeline in 2026. The right move is...</p>
+      <button class="qopt" type="button">A · Migrate to Google Meridian - Bayesian, uncertainty intervals; LightweightMMM was deprecated Jan 2025</button>
+      <button class="qopt" type="button">B · Keep it - LightweightMMM is Google's current recommendation</button>
+      <button class="qopt" type="button">C · Rewrite it in last-touch attribution</button>
+      <p class="qwhy">Google deprecated LightweightMMM in January 2025 in favour of Meridian, its Bayesian successor - every parameter gets a credible interval and you can calibrate with experiment priors. Do not build new work on the deprecated library.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ OFFICIAL SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session distills the MMM foundations - adstock, saturation, and the modern Bayesian toolchain - into a build-it-yourself first pass on Lumen's aggregate data. Full model internals and vendor docs stay with their official sources.</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">PyMC Labs - Bayesian Marketing Analytics</span><span class="note">adstock, saturation, Bayesian MMM - Parts 1-3, Build-alongs</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Google Meridian docs</span><span class="note">Bayesian MMM, uncertainty, priors - Part 3</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Udemy - Fundamentals of MMM: Learn by Doing</span><span class="note">the transforms and a first fit - Build-alongs 1-2</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Full Bayesian MCMC internals</span><span class="note">named here; PyMC-Marketing homework goes deeper</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Calibrating MMM with experiment priors</span><span class="note">built in Builder Session 9 (geo-lift → priors)</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder Session 8 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>MMM =</b><span>Regress a weekly outcome KPI on aggregate channel spend (2-3 yrs). No user identity - privacy-resilient by construction.</span></div>
+      <div class="cheat-item"><b>Adstock (carryover)</b><span>An ad's effect decays over later weeks. Geometric = one theta per channel; Weibull = flexible shape/scale. CTV slow, search fast.</span></div>
+      <div class="cheat-item"><b>Saturation</b><span>Diminishing returns. Hill / Michaelis-Menten / log curve. Doubling spend never doubles response. This IS the budget-response curve.</span></div>
+      <div class="cheat-item"><b>Pipeline order</b><span>Adstock first (spread over time), saturation second (bend for returns), regression third. Never swap the first two.</span></div>
+      <div class="cheat-item"><b>Robyn vs Meridian vs PyMC</b><span>Robyn = R, ridge + Nevergrad, point estimates. Meridian = Python, Bayesian, uncertainty intervals. PyMC-Marketing = Python, Bayesian.</span></div>
+      <div class="cheat-item"><b>2026 note</b><span>Google deprecated LightweightMMM (Jan 2025) → Meridian (Bayesian). Priors are where geo-lift results calibrate the model.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 8 of 10 · learn-marketing-attribution-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b7-ga4-dda-reconciliation.html">← Prev: GA4 DDA and reconciliation</a> &nbsp;·&nbsp; <a href="b9-incrementality-geo-lift.html">Next: Incrementality and geo-lift →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>
