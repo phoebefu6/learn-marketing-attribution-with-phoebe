@@ -189,6 +189,42 @@ def time_decay(g, half_life=7.0):
       <h2>Position-based and last-non-direct <span class="tag concept">5 min live</span></h2>
     </div>
     <p class="lede">Position-based (U-shaped) tells a story: the touch that <em>started</em> the journey and the touch that <em>closed</em> it matter most. Lumen uses 40% to first, 40% to last, and the remaining 20% split evenly across the middle. Last-non-direct is a tiny variant of last-touch that skips self-navigation.</p>
+<figure class="zoomable">
+  <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A decomposition tree showing Lumen's 92 dollar journey split by the position-based rule: 36.80 dollars, 40 percent, to the first touch, 36.80 dollars, 40 percent, to the last touch, and the remaining 18.40 dollars, 20 percent, split evenly across the three middle touches at about 6.13 dollars each.">
+    <style>
+      .mab2dT { font: 700 13px Inter, sans-serif; fill: #10201E; }
+      .mab2dR { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+      .mab2dC { font: 700 12px Inter, sans-serif; fill: #0B4A45; }
+      .mab2dS { font: 400 11px Inter, sans-serif; fill: #5B7671; }
+      .mab2dN { font: 400 12px Inter, sans-serif; fill: #5B7671; }
+    </style>
+    <rect x="0" y="0" width="880" height="300" fill="#FFFFFF"/>
+    <text class="mab2dT" x="40" y="28">Position-based: 40% first, 40% last, 20% split across the middle</text>
+
+    <rect x="340" y="40" width="200" height="50" rx="10" fill="#0F766E"/>
+    <text class="mab2dR" x="440" y="70" text-anchor="middle">Journey total $92.00</text>
+
+    <line x1="440" y1="90" x2="170" y2="160" stroke="#5B7671" stroke-width="1.6"/>
+    <line x1="440" y1="90" x2="440" y2="160" stroke="#5B7671" stroke-width="1.6"/>
+    <line x1="440" y1="90" x2="710" y2="160" stroke="#5B7671" stroke-width="1.6"/>
+
+    <rect x="60" y="160" width="220" height="70" rx="10" fill="#E6FAF5" stroke="#0F766E" stroke-width="1.4"/>
+    <text class="mab2dC" x="170" y="192" text-anchor="middle">First touch $36.80</text>
+    <text class="mab2dS" x="170" y="212" text-anchor="middle">40% of the journey</text>
+
+    <rect x="330" y="160" width="220" height="70" rx="10" fill="#E6FAF5" stroke="#0F766E" stroke-width="1.4"/>
+    <text class="mab2dC" x="440" y="192" text-anchor="middle">3 middle touches $18.40</text>
+    <text class="mab2dS" x="440" y="212" text-anchor="middle">~$6.13 each, 20% total</text>
+
+    <rect x="600" y="160" width="220" height="70" rx="10" fill="#E6FAF5" stroke="#0F766E" stroke-width="1.4"/>
+    <text class="mab2dC" x="710" y="192" text-anchor="middle">Last touch $36.80</text>
+    <text class="mab2dS" x="710" y="212" text-anchor="middle">40% of the journey</text>
+
+    <text class="mab2dN" x="40" y="276">The touch that opened and the touch that closed the journey both outweigh the middle three.</text>
+  </svg>
+  <figcaption>🔍 Click to zoom - the U-shape rewards the opener and the closer, not the middle</figcaption>
+</figure>
+
 
     <details class="card" open>
       <summary><span class="mode live">Live</span>U-shaped credit and the direct filter<span class="mini">3 min</span><span class="caret">▶</span></summary>
@@ -305,7 +341,48 @@ print(table)</pre>
           </tbody>
         </table>
       </div>
-      <div class="step"><p>Read down the <code>display</code> row: $92, then $0, then $18.40, then ~$6, then $36.80, then $0. Same customer, same $92, six verdicts. You just reproduced the credit problem in code - and every column conserves to $92.</p></div>
+      <div class="step"><p>Read down the <code>display</code> row: $92, then $0, then $18.40, then ~$6, then $36.80, then $0. Same customer, same $92, six verdicts. You just reproduced the credit problem in code - and every column conserves to $92.</p>
+<figure class="zoomable">
+  <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A bar chart showing how the display touch's credit on Lumen's 92 dollar journey swings by model: 92 dollars under first-touch, 0 dollars under last-touch, 18.40 dollars under linear, about 6 dollars under time-decay, 36.80 dollars under position-based, and 0 dollars under last-non-direct.">
+    <style>
+      .mab2T { font: 700 13px Inter, sans-serif; fill: #10201E; }
+      .mab2L { font: 600 12px Inter, sans-serif; fill: #10201E; }
+      .mab2V { font: 700 12px Inter, sans-serif; fill: #FFFFFF; }
+      .mab2VO { font: 700 12px Inter, sans-serif; fill: #10201E; }
+      .mab2N { font: 400 12px Inter, sans-serif; fill: #5B7671; }
+    </style>
+    <rect x="0" y="0" width="880" height="400" fill="#FFFFFF"/>
+    <text class="mab2T" x="40" y="28">Same $92 display touch, six credit answers</text>
+
+    <text class="mab2L" x="240" y="66" text-anchor="end">First-touch</text>
+    <rect x="260" y="46" width="480" height="28" rx="6" fill="#0F766E"/>
+    <text class="mab2V" x="272" y="66">$92.00</text>
+
+    <text class="mab2L" x="240" y="118" text-anchor="end">Last-touch</text>
+    <rect x="260" y="98" width="5" height="28" rx="2" fill="#5B7671"/>
+    <text class="mab2VO" x="275" y="118">$0</text>
+
+    <text class="mab2L" x="240" y="170" text-anchor="end">Linear</text>
+    <rect x="260" y="150" width="96" height="28" rx="6" fill="#14B8A6"/>
+    <text class="mab2V" x="272" y="170">$18.40</text>
+
+    <text class="mab2L" x="240" y="222" text-anchor="end">Time-decay</text>
+    <rect x="260" y="202" width="31" height="28" rx="6" fill="#14B8A6"/>
+    <text class="mab2VO" x="301" y="222">~$6</text>
+
+    <text class="mab2L" x="240" y="274" text-anchor="end">Position-based</text>
+    <rect x="260" y="254" width="192" height="28" rx="6" fill="#0F766E"/>
+    <text class="mab2V" x="272" y="274">$36.80</text>
+
+    <text class="mab2L" x="240" y="326" text-anchor="end">Last-non-direct</text>
+    <rect x="260" y="306" width="5" height="28" rx="2" fill="#5B7671"/>
+    <text class="mab2VO" x="275" y="326">$0</text>
+
+    <text class="mab2N" x="40" y="376">Same $92 journey, six verdicts on the display touch - the argument was always which rule ran.</text>
+  </svg>
+  <figcaption>🔍 Click to zoom - the disagreement was never the data, it was which rule was running</figcaption>
+</figure>
+</div>
     </div>
     <div class="callout example">
       <span class="ex-pill">Real world</span>
